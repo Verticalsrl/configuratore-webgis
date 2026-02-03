@@ -13,6 +13,10 @@ export default function MapLegend() {
           <div className="w-5 h-3.5 rounded bg-green-400/70" />
           Occupato
         </div>
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <div className="w-5 h-3.5 rounded bg-yellow-400/70" />
+          Altri
+        </div>
       </div>
     </div>
   );

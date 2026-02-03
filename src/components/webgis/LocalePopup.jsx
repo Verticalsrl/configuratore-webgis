@@ -39,14 +39,20 @@ export default function LocalePopup({ locale }) {
             "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold",
             locale.stato === 'sfitto' 
               ? "bg-red-50 text-red-600" 
-              : "bg-green-50 text-green-600"
+              : locale.stato === 'occupato'
+              ? "bg-green-50 text-green-600"
+              : "bg-yellow-50 text-yellow-600"
           )}
         >
           <span className={cn(
             "w-2 h-2 rounded-full",
-            locale.stato === 'sfitto' ? "bg-red-500" : "bg-green-500"
+            locale.stato === 'sfitto' 
+              ? "bg-red-500" 
+              : locale.stato === 'occupato'
+              ? "bg-green-500"
+              : "bg-yellow-500"
           )} />
-          {locale.stato === 'sfitto' ? 'Sfitto' : 'Occupato'}
+          {locale.stato === 'sfitto' ? 'Sfitto' : locale.stato === 'occupato' ? 'Occupato' : 'Altri'}
         </span>
       </div>
     </div>

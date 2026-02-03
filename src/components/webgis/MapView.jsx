@@ -12,6 +12,7 @@ export default function MapView({ project, locali, onReset }) {
   const [filters, setFilters] = useState({
     showSfitti: true,
     showOccupati: true,
+    showAltri: true,
     search: '',
     minSuperficie: '',
     maxSuperficie: ''
@@ -21,6 +22,7 @@ export default function MapView({ project, locali, onReset }) {
     return locali.filter((l) => {
       if (!filters.showSfitti && l.stato === 'sfitto') return false;
       if (!filters.showOccupati && l.stato === 'occupato') return false;
+      if (!filters.showAltri && l.stato === 'altri') return false;
       if (filters.search && !l.indirizzo?.toLowerCase().includes(filters.search.toLowerCase())) return false;
       if (filters.minSuperficie && l.superficie < parseFloat(filters.minSuperficie)) return false;
       if (filters.maxSuperficie && l.superficie > parseFloat(filters.maxSuperficie)) return false;
@@ -32,7 +34,8 @@ export default function MapView({ project, locali, onReset }) {
     return {
       totale: filteredLocali.length,
       sfitti: filteredLocali.filter((l) => l.stato === 'sfitto').length,
-      occupati: filteredLocali.filter((l) => l.stato === 'occupato').length
+      occupati: filteredLocali.filter((l) => l.stato === 'occupato').length,
+      altri: filteredLocali.filter((l) => l.stato === 'altri').length
     };
   }, [filteredLocali]);
 
@@ -132,7 +135,9 @@ export default function MapView({ project, locali, onReset }) {
           'case',
           ['==', ['get', 'stato'], 'sfitto'],
           'rgba(248, 113, 113, 0.6)',
-          'rgba(74, 222, 128, 0.6)'
+          ['==', ['get', 'stato'], 'occupato'],
+          'rgba(74, 222, 128, 0.6)',
+          'rgba(234, 179, 8, 0.6)'
         ],
         'fill-opacity': 0.7
       }
@@ -152,7 +157,9 @@ export default function MapView({ project, locali, onReset }) {
           'case',
           ['==', ['get', 'stato'], 'sfitto'],
           '#dc2626',
-          '#16a34a'
+          ['==', ['get', 'stato'], 'occupato'],
+          '#16a34a',
+          '#ca8a04'
         ],
         'line-width': 2
       }
@@ -170,7 +177,9 @@ export default function MapView({ project, locali, onReset }) {
           'case',
           ['==', ['get', 'stato'], 'sfitto'],
           '#f87171',
-          '#4ade80'
+          ['==', ['get', 'stato'], 'occupato'],
+          '#4ade80',
+          '#eab308'
         ],
         'circle-stroke-width': 2,
         'circle-stroke-color': '#ffffff'
@@ -266,6 +275,7 @@ export default function MapView({ project, locali, onReset }) {
             <span>Visualizzati: <strong className="text-white">{filteredLocali.length}</strong></span>
             <span>Sfitti: <strong className="text-red-400">{stats.sfitti}</strong></span>
             <span>Occupati: <strong className="text-green-400">{stats.occupati}</strong></span>
+            {stats.altri > 0 && <span>Altri: <strong className="text-yellow-400">{stats.altri}</strong></span>}
           </div>
         </div>
       </div>

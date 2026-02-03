@@ -25,6 +25,14 @@ export default function PreviewStats({ stats }) {
         <div className="text-2xl font-bold text-green-400">{stats.occupati}</div>
         <div className="text-xs text-slate-400 mt-1">Occupati</div>
       </div>
+
+      {stats.altri > 0 && (
+        <div className="bg-slate-700/50 rounded-xl p-4 text-center">
+          <AlertCircle className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
+          <div className="text-2xl font-bold text-yellow-400">{stats.altri}</div>
+          <div className="text-xs text-slate-400 mt-1">Altri</div>
+        </div>
+      )}
       
       <div className="bg-slate-700/50 rounded-xl p-4 text-center">
         <Percent className="w-6 h-6 mx-auto mb-2 text-amber-400" />

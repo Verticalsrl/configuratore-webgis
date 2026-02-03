@@ -125,6 +125,16 @@ export default function FieldMapper({ fields, config, onChange }) {
             />
             <p className="text-xs text-slate-500">Il valore nel campo stato che indica "occupato"</p>
           </div>
+          <div className="space-y-2">
+            <Label className="text-slate-400 text-sm">Valore "Altri"</Label>
+            <Input
+              value={config.valore_altri || ''}
+              onChange={(e) => handleChange('valore_altri', e.target.value)}
+              placeholder="es. ALTRI, In lavorazione..."
+              className="bg-slate-900 border-slate-600 text-white"
+            />
+            <p className="text-xs text-slate-500">Il valore nel campo stato che indica "altri"</p>
+          </div>
         </div>
       </div>
     </div>
