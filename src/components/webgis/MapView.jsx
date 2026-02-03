@@ -40,18 +40,36 @@ export default function MapView({ project, locali, user }) {
   }, [filteredLocali]);
 
   useEffect(() => {
-    if (!mapContainer.current || mapRef.current) return;
+    if (!mapContainer.current) return;
 
-    // Load MapLibre dynamically
+    // Check if MapLibre is already loaded
+    if (window.maplibregl && !mapRef.current) {
+      initMap();
+      return;
+    }
+
+    // Check if scripts are already being loaded
+    if (document.querySelector('script[src*="maplibre-gl.js"]')) {
+      return;
+    }
+
+    // Load CSS first
+    const link = document.createElement('link');
+    link.href = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+
+    // Then load JS
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js';
+    script.async = true;
     script.onload = () => {
-      const link = document.createElement('link');
-      link.href = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-
-      initMap();
+      if (window.maplibregl && !mapRef.current) {
+        initMap();
+      }
+    };
+    script.onerror = (e) => {
+      console.error('Error loading MapLibre GL JS:', e);
     };
     document.head.appendChild(script);
 
