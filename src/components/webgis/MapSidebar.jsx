@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
-import { Building2, Download, Upload, ArrowLeft } from 'lucide-react';
+import React from 'react';
+import { Building2, ArrowLeft, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
-import ImportGeoJSONModal from '../projects/ImportGeoJSONModal';
 
 export default function MapSidebar({ 
   project, 
   stats, 
   filters, 
   onFilterChange,
-  onExport,
-  onImportSuccess
+  user
 }) {
-  const [showImportModal, setShowImportModal] = useState(false);
   const tasso = stats.totale > 0 
     ? ((stats.sfitti / stats.totale) * 100).toFixed(1) 
     : 0;
@@ -140,22 +137,17 @@ export default function MapSidebar({
 
       {/* Actions */}
       <div className="pt-4 mt-4 border-t border-slate-700 space-y-2">
-        <Button
-          onClick={onExport}
-          variant="outline"
-          className="w-full bg-slate-700 border-slate-600 hover:bg-slate-600 text-white"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Esporta GeoJSON
-        </Button>
-        <Button
-          onClick={() => setShowImportModal(true)}
-          variant="outline"
-          className="w-full bg-slate-700 border-slate-600 hover:bg-slate-600 text-white"
-        >
-          <Upload className="w-4 h-4 mr-2" />
-          Importa GeoJSON
-        </Button>
+        {user && (
+          <Link to={createPageUrl('ProjectSettings') + '?id=' + project.id}>
+            <Button
+              variant="outline"
+              className="w-full bg-slate-700 border-slate-600 hover:bg-slate-600 text-white"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Impostazioni
+            </Button>
+          </Link>
+        )}
         <Link to={createPageUrl('Projects')}>
           <Button
             variant="outline"
@@ -166,13 +158,6 @@ export default function MapSidebar({
           </Button>
         </Link>
       </div>
-
-      <ImportGeoJSONModal
-        open={showImportModal}
-        onOpenChange={setShowImportModal}
-        project={project}
-        onSuccess={onImportSuccess}
-      />
     </div>
   );
 }

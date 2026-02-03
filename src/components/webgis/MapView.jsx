@@ -4,7 +4,7 @@ import MapSidebar from './MapSidebar';
 import MapLegend from './MapLegend';
 import LocalePopup from './LocalePopup';
 
-export default function MapView({ project, locali, onReset }) {
+export default function MapView({ project, locali, user }) {
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
   const popupRef = useRef(null);
@@ -234,37 +234,7 @@ export default function MapView({ project, locali, onReset }) {
 
   }, [mapLoaded, filteredLocali]);
 
-  const handleExport = () => {
-    const geojson = {
-      type: 'FeatureCollection',
-      features: filteredLocali.map((l) => ({
-        type: 'Feature',
-        geometry: l.geometry || {
-          type: 'Point',
-          coordinates: l.coordinates || [0, 0]
-        },
-        properties: {
-          indirizzo: l.indirizzo,
-          superficie: l.superficie,
-          stato: l.stato,
-          canone: l.canone,
-          conduttore: l.conduttore,
-          ...l.properties_raw
-        }
-      }))
-    };
-    
-    const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${project?.nome || 'progetto'}_export.geojson`;
-    a.click();
-  };
 
-  const handleImportSuccess = () => {
-    window.location.reload();
-  };
 
   return (
     <div className="flex h-screen bg-slate-900">
@@ -273,8 +243,7 @@ export default function MapView({ project, locali, onReset }) {
         stats={stats}
         filters={filters}
         onFilterChange={setFilters}
-        onExport={handleExport}
-        onImportSuccess={handleImportSuccess}
+        user={user}
       />
       
       <div className="flex-1 relative">

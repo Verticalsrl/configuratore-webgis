@@ -31,12 +31,16 @@ export default function Projects() {
     enabled: !!user
   });
 
-  const deleteProjectMutation = useMutation({
+  const clearProjectMutation = useMutation({
     mutationFn: async (projectId) => {
-      await base44.entities.Locale.filter({ project_id: projectId }).then((locali) => {
-        return Promise.all(locali.map((l) => base44.entities.Locale.delete(l.id)));
+      const locali = await base44.entities.Locale.filter({ project_id: projectId });
+      await Promise.all(locali.map((l) => base44.entities.Locale.delete(l.id)));
+      await base44.entities.Progetto.update(projectId, {
+        totale_locali: 0,
+        totale_sfitti: 0,
+        totale_occupati: 0,
+        totale_altri: 0
       });
-      await base44.entities.Progetto.delete(projectId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -116,7 +120,7 @@ export default function Projects() {
               <ProjectCard
                 key={project.id}
                 project={project}
-                onDelete={() => deleteProjectMutation.mutate(project.id)}
+                onDelete={() => clearProjectMutation.mutate(project.id)}
               />
             ))}
           </div>

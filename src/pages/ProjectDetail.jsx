@@ -18,7 +18,7 @@ export default function ProjectDetail() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
       } catch (error) {
-        base44.auth.redirectToLogin();
+        setUser(null);
       }
     };
     fetchUser();
@@ -30,7 +30,7 @@ export default function ProjectDetail() {
       const projects = await base44.entities.Progetto.filter({ id: projectId });
       return projects[0];
     },
-    enabled: !!user && !!projectId
+    enabled: !!projectId
   });
 
   const { data: locali = [], isLoading: localiLoading } = useQuery({
@@ -39,7 +39,7 @@ export default function ProjectDetail() {
     enabled: !!projectId
   });
 
-  if (!user || projectLoading || localiLoading) {
+  if (projectLoading || localiLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
@@ -63,5 +63,5 @@ export default function ProjectDetail() {
     );
   }
 
-  return <MapView project={project} locali={locali} />;
+  return <MapView project={project} locali={locali} user={user} />;
 }
