@@ -35,9 +35,9 @@ export default function ProjectCard({ project, onDelete }) {
             </AlertDialogTrigger>
             <AlertDialogContent className="bg-slate-800 border-slate-700">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-white">Eliminare il progetto?</AlertDialogTitle>
+                <AlertDialogTitle className="text-white">Svuotare il progetto?</AlertDialogTitle>
                 <AlertDialogDescription className="text-slate-400">
-                  Questa azione eliminerà definitivamente il progetto e tutti i locali associati.
+                  Questa azione eliminerà tutti i locali associati al progetto.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -48,7 +48,7 @@ export default function ProjectCard({ project, onDelete }) {
                   onClick={onDelete}
                   className="bg-red-600 hover:bg-red-700"
                 >
-                  Elimina
+                  Svuota
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
