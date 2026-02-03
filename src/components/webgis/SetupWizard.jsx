@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowRight, ArrowLeft, Rocket, Loader2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Rocket, Loader2, X } from 'lucide-react';
 import StepIndicator from './StepIndicator';
 import UploadZone from './UploadZone';
 import FieldMapper from './FieldMapper';
@@ -14,7 +14,7 @@ const STEPS = [
   { id: 'preview', label: 'Anteprima' }
 ];
 
-export default function SetupWizard({ onComplete }) {
+export default function SetupWizard({ onComplete, onCancel }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loadedFile, setLoadedFile] = useState(null);
   const [projectName, setProjectName] = useState('');
@@ -25,7 +25,8 @@ export default function SetupWizard({ onComplete }) {
     campo_canone: '',
     campo_conduttore: '',
     valore_sfitto: 'SFITTO',
-    valore_occupato: 'OCCUPATO'
+    valore_occupato: 'OCCUPATO',
+    valore_altri: 'ALTRI'
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [logs, setLogs] = useState([]);
@@ -35,11 +36,12 @@ export default function SetupWizard({ onComplete }) {
   };
 
   const calculateStats = () => {
-    if (!loadedFile?.data?.features) return { totale: 0, sfitti: 0, occupati: 0 };
+    if (!loadedFile?.data?.features) return { totale: 0, sfitti: 0, occupati: 0, altri: 0 };
     
     const features = loadedFile.data.features;
     let sfitti = 0;
     let occupati = 0;
+    let altri = 0;
     
     features.forEach((f) => {
       const props = f.properties || {};
@@ -49,13 +51,15 @@ export default function SetupWizard({ onComplete }) {
       
       const valSfitto = (config.valore_sfitto || '').toUpperCase().trim();
       const valOccupato = (config.valore_occupato || '').toUpperCase().trim();
+      const valAltri = (config.valore_altri || '').toUpperCase().trim();
       
       if (statoValue === valSfitto) {
         sfitti++;
       } else if (statoValue === valOccupato) {
         occupati++;
+      } else if (statoValue === valAltri) {
+        altri++;
       } else if (config.campo_stato && config.campo_stato !== '_none') {
-        // Default to sfitto if no match
         sfitti++;
       }
     });
@@ -63,7 +67,8 @@ export default function SetupWizard({ onComplete }) {
     return {
       totale: features.length,
       sfitti,
-      occupati: features.length - sfitti
+      occupati,
+      altri
     };
   };
 
@@ -131,12 +136,16 @@ export default function SetupWizard({ onComplete }) {
         const statoValue = config.campo_stato && config.campo_stato !== '_none'
           ? String(props[config.campo_stato] || '').toUpperCase().trim()
           : '';
-        
+
         const valSfitto = (config.valore_sfitto || '').toUpperCase().trim();
-        
+        const valOccupato = (config.valore_occupato || '').toUpperCase().trim();
+        const valAltri = (config.valore_altri || '').toUpperCase().trim();
+
         let stato = 'sfitto';
-        if (statoValue && statoValue !== valSfitto) {
+        if (statoValue === valOccupato) {
           stato = 'occupato';
+        } else if (statoValue === valAltri) {
+          stato = 'altri';
         }
         
         return {
@@ -190,7 +199,17 @@ export default function SetupWizard({ onComplete }) {
   return (
     <div className="min-h-screen bg-slate-900 text-white p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 relative">
+          {onCancel && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onCancel}
+              className="absolute left-0 top-0 text-slate-400 hover:text-white"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+          )}
           <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
             Configuratore WebGIS
           </h1>
