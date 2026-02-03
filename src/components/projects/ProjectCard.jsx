@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Trash2, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../pages/utils';
+import { createPageUrl } from '../../utils';
 import { format } from 'date-fns';
 import {
   AlertDialog,

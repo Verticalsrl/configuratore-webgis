@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../pages/utils';
+import { createPageUrl } from '../../utils';
 import ImportGeoJSONModal from '../projects/ImportGeoJSONModal';
 
 export default function MapSidebar({ 
