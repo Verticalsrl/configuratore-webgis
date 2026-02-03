@@ -1,9 +1,11 @@
-import React from 'react';
-import { Building2, Download, Settings, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Building2, Download, Upload, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../../pages/utils';
+import ImportGeoJSONModal from '../projects/ImportGeoJSONModal';
 
 export default function MapSidebar({ 
   project, 
@@ -11,8 +13,9 @@ export default function MapSidebar({
   filters, 
   onFilterChange,
   onExport,
-  onReset
+  onImportSuccess
 }) {
+  const [showImportModal, setShowImportModal] = useState(false);
   const tasso = stats.totale > 0 
     ? ((stats.sfitti / stats.totale) * 100).toFixed(1) 
     : 0;
@@ -44,6 +47,12 @@ export default function MapSidebar({
           <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Occupati</div>
           <div className="text-2xl font-bold text-green-400">{stats.occupati}</div>
         </div>
+        {stats.altri > 0 && (
+          <div className="bg-slate-700/50 rounded-xl p-3.5">
+            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Altri</div>
+            <div className="text-2xl font-bold text-yellow-400">{stats.altri}</div>
+          </div>
+        )}
         <div className="bg-slate-700/50 rounded-xl p-3.5">
           <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Tasso</div>
           <div className="text-2xl font-bold text-amber-400">{tasso}%</div>
@@ -79,6 +88,17 @@ export default function MapSidebar({
                 <label htmlFor="show-occupati" className="text-sm text-white flex items-center gap-2 cursor-pointer">
                   <span className="w-3 h-3 rounded-full bg-green-400" />
                   Occupati
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show-altri"
+                  checked={filters.showAltri}
+                  onCheckedChange={(checked) => onFilterChange({ ...filters, showAltri: checked })}
+                />
+                <label htmlFor="show-altri" className="text-sm text-white flex items-center gap-2 cursor-pointer">
+                  <span className="w-3 h-3 rounded-full bg-yellow-400" />
+                  Altri
                 </label>
               </div>
             </div>
@@ -126,17 +146,33 @@ export default function MapSidebar({
           className="w-full bg-slate-700 border-slate-600 hover:bg-slate-600 text-white"
         >
           <Download className="w-4 h-4 mr-2" />
-          Esporta CSV
+          Esporta GeoJSON
         </Button>
         <Button
-          onClick={onReset}
+          onClick={() => setShowImportModal(true)}
           variant="outline"
           className="w-full bg-slate-700 border-slate-600 hover:bg-slate-600 text-white"
         >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Nuovo Progetto
+          <Upload className="w-4 h-4 mr-2" />
+          Importa GeoJSON
         </Button>
+        <Link to={createPageUrl('Projects')}>
+          <Button
+            variant="outline"
+            className="w-full bg-slate-700 border-slate-600 hover:bg-slate-600 text-white"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Tutti i Progetti
+          </Button>
+        </Link>
       </div>
+
+      <ImportGeoJSONModal
+        open={showImportModal}
+        onOpenChange={setShowImportModal}
+        project={project}
+        onSuccess={onImportSuccess}
+      />
     </div>
   );
 }
