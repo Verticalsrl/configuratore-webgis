@@ -17,22 +17,23 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export default function ProjectCard({ project, onDelete }) {
+export default function ProjectCard({ project, onDelete, user }) {
   return (
     <Card className="bg-slate-800 border-slate-700 hover:border-blue-500 transition-all">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg text-white">{project.nome}</CardTitle>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </AlertDialogTrigger>
+          {user && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
             <AlertDialogContent className="bg-slate-800 border-slate-700">
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-white">Eliminare il progetto?</AlertDialogTitle>
@@ -53,6 +54,7 @@ export default function ProjectCard({ project, onDelete }) {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          )}
         </div>
         {project.descrizione && (
           <p className="text-sm text-slate-400 mt-2">{project.descrizione}</p>

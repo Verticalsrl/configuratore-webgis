@@ -19,7 +19,7 @@ export default function Projects() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
       } catch (error) {
-        base44.auth.redirectToLogin();
+        setUser(null);
       }
     };
     fetchUser();
@@ -27,8 +27,7 @@ export default function Projects() {
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Progetto.list('-created_date'),
-    enabled: !!user
+    queryFn: () => base44.entities.Progetto.list('-created_date')
   });
 
   const deleteProjectMutation = useMutation({
@@ -56,13 +55,7 @@ export default function Projects() {
     queryClient.invalidateQueries({ queryKey: ['projects'] });
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-      </div>
-    );
-  }
+
 
   if (showWizard) {
     return (
@@ -83,13 +76,15 @@ export default function Projects() {
             </h1>
             <p className="text-slate-400">Gestisci i tuoi progetti WebGIS</p>
           </div>
-          <Button
-            onClick={() => setShowWizard(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Nuovo Progetto
-          </Button>
+          {user && (
+            <Button
+              onClick={() => setShowWizard(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Nuovo Progetto
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -101,13 +96,15 @@ export default function Projects() {
             <Building2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Nessun progetto</h3>
             <p className="text-slate-400 mb-6">Crea il tuo primo progetto per iniziare</p>
-            <Button
-              onClick={() => setShowWizard(true)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Crea Progetto
-            </Button>
+            {user && (
+              <Button
+                onClick={() => setShowWizard(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Crea Progetto
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -116,6 +113,7 @@ export default function Projects() {
                 key={project.id}
                 project={project}
                 onDelete={() => deleteProjectMutation.mutate(project.id)}
+                user={user}
               />
             ))}
           </div>
