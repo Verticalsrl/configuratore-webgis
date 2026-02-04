@@ -32,17 +32,27 @@ function MapUpdater({ locali }) {
   const map = useMap();
   
   React.useEffect(() => {
-    if (locali.length > 0) {
-      const bounds = L.latLngBounds(
-        locali.map(l => {
-          if (l.geometry?.type === 'Point') {
-            return [l.coordinates[1], l.coordinates[0]];
-          } else if (l.geometry?.type === 'Polygon') {
-            return l.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-          }
-          return [l.coordinates[1], l.coordinates[0]];
-        }).flat()
-      );
+    if (locali.length === 0) return;
+
+    const points = [];
+    locali.forEach(l => {
+      if (l.geometry?.type === 'Point' && l.coordinates) {
+        points.push([l.coordinates[1], l.coordinates[0]]);
+      } else if (l.geometry?.type === 'Polygon' && l.geometry.coordinates?.[0]) {
+        l.geometry.coordinates[0].forEach(coord => {
+          points.push([coord[1], coord[0]]);
+        });
+      } else if (l.geometry?.type === 'MultiPolygon' && l.geometry.coordinates) {
+        l.geometry.coordinates.forEach(polygon => {
+          polygon[0].forEach(coord => {
+            points.push([coord[1], coord[0]]);
+          });
+        });
+      }
+    });
+
+    if (points.length > 0) {
+      const bounds = L.latLngBounds(points);
       map.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [locali, map]);
