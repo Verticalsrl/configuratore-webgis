@@ -132,6 +132,27 @@ export default function MapSidebar({
               />
             </div>
           </div>
+
+          {/* Foglio and Particella Search */}
+          <div>
+            <label className="text-xs text-gray-600 block mb-2">Cerca Foglio</label>
+            <Input
+              value={filters.foglioSearch || ''}
+              onChange={(e) => onFilterChange({ ...filters, foglioSearch: e.target.value })}
+              placeholder="N. Foglio"
+              className="bg-white border-gray-300 text-gray-900 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-600 block mb-2">Cerca Particella</label>
+            <Input
+              value={filters.particellaSearch || ''}
+              onChange={(e) => onFilterChange({ ...filters, particellaSearch: e.target.value })}
+              placeholder="N. Particella"
+              className="bg-white border-gray-300 text-gray-900 text-sm"
+            />
+          </div>
         </div>
       </div>
 
