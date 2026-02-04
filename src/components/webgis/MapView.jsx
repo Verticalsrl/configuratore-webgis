@@ -1,14 +1,56 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { createRoot } from 'react-dom/client';
+import React, { useRef, useState, useMemo } from 'react';
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import MapSidebar from './MapSidebar';
 import MapLegend from './MapLegend';
 import LocalePopup from './LocalePopup';
 
+// Fix for default marker icons in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Custom marker icons
+const createCustomIcon = (color) => {
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="background-color: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+};
+
+const sfittoIcon = createCustomIcon('#f87171');
+const occupatoIcon = createCustomIcon('#4ade80');
+const altriIcon = createCustomIcon('#eab308');
+
+function MapUpdater({ locali }) {
+  const map = useMap();
+  
+  React.useEffect(() => {
+    if (locali.length > 0) {
+      const bounds = L.latLngBounds(
+        locali.map(l => {
+          if (l.geometry?.type === 'Point') {
+            return [l.coordinates[1], l.coordinates[0]];
+          } else if (l.geometry?.type === 'Polygon') {
+            return l.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
+          }
+          return [l.coordinates[1], l.coordinates[0]];
+        }).flat()
+      );
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [locali, map]);
+
+  return null;
+}
+
 export default function MapView({ project, locali, user }) {
-  const mapContainer = useRef(null);
-  const mapRef = useRef(null);
-  const popupRef = useRef(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
   const [filters, setFilters] = useState({
     showSfitti: true,
     showOccupati: true,
@@ -39,226 +81,29 @@ export default function MapView({ project, locali, user }) {
     };
   }, [filteredLocali]);
 
-  useEffect(() => {
-    if (!mapContainer.current || mapRef.current) return;
-
-    const loadMapLibre = () => {
-      // Check if already loaded
-      if (window.maplibregl) {
-        initMap();
-        return;
-      }
-
-      // Check if already loading
-      const existingScript = document.querySelector('script[src*="maplibre-gl"]');
-      if (existingScript) {
-        existingScript.addEventListener('load', () => {
-          if (window.maplibregl) initMap();
-        });
-        return;
-      }
-
-      // Load CSS
-      if (!document.querySelector('link[href*="maplibre-gl.css"]')) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css';
-        document.head.appendChild(link);
-      }
-
-      // Load JS
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js';
-      script.onload = () => {
-        if (window.maplibregl) {
-          initMap();
-        }
-      };
-      document.head.appendChild(script);
+  const getFeatureStyle = (locale) => {
+    const colors = {
+      sfitto: { fill: 'rgba(248, 113, 113, 0.6)', stroke: '#dc2626' },
+      occupato: { fill: 'rgba(74, 222, 128, 0.6)', stroke: '#16a34a' },
+      altri: { fill: 'rgba(234, 179, 8, 0.6)', stroke: '#ca8a04' }
     };
-
-    loadMapLibre();
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
+    const color = colors[locale.stato] || colors.altri;
+    return {
+      fillColor: color.fill,
+      color: color.stroke,
+      weight: 2,
+      fillOpacity: 0.7
     };
-  }, []);
-
-  const initMap = () => {
-    const maplibregl = window.maplibregl;
-    if (!maplibregl) return;
-
-    const center = project?.center || [12.4964, 41.9028];
-    const zoom = project?.zoom || 14;
-
-    const map = new maplibregl.Map({
-      container: mapContainer.current,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-      center: center,
-      zoom: zoom,
-      attributionControl: false
-    });
-
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
-
-    map.on('load', () => {
-      mapRef.current = map;
-      setMapLoaded(true);
-    });
   };
 
-  useEffect(() => {
-    if (!mapLoaded || !mapRef.current) return;
+  const getMarkerIcon = (locale) => {
+    if (locale.stato === 'sfitto') return sfittoIcon;
+    if (locale.stato === 'occupato') return occupatoIcon;
+    return altriIcon;
+  };
 
-    const map = mapRef.current;
-    const maplibregl = window.maplibregl;
-
-    // Remove existing layers and sources
-    if (map.getLayer('locali-fill')) map.removeLayer('locali-fill');
-    if (map.getLayer('locali-outline')) map.removeLayer('locali-outline');
-    if (map.getLayer('locali-points')) map.removeLayer('locali-points');
-    if (map.getSource('locali')) map.removeSource('locali');
-
-    // Create GeoJSON from filtered locali
-    const geojson = {
-      type: 'FeatureCollection',
-      features: filteredLocali.map((l, index) => ({
-        type: 'Feature',
-        id: index,
-        geometry: l.geometry || {
-          type: 'Point',
-          coordinates: l.coordinates || [0, 0]
-        },
-        properties: {
-          ...l,
-          index
-        }
-      }))
-    };
-
-    map.addSource('locali', {
-      type: 'geojson',
-      data: geojson
-    });
-
-    // Add fill layer for polygons
-    map.addLayer({
-      id: 'locali-fill',
-      type: 'fill',
-      source: 'locali',
-      filter: ['any', 
-        ['==', ['geometry-type'], 'Polygon'],
-        ['==', ['geometry-type'], 'MultiPolygon']
-      ],
-      paint: {
-        'fill-color': [
-          'case',
-          ['==', ['get', 'stato'], 'sfitto'],
-          'rgba(248, 113, 113, 0.6)',
-          ['==', ['get', 'stato'], 'occupato'],
-          'rgba(74, 222, 128, 0.6)',
-          'rgba(234, 179, 8, 0.6)'
-        ],
-        'fill-opacity': 0.7
-      }
-    });
-
-    // Add outline layer
-    map.addLayer({
-      id: 'locali-outline',
-      type: 'line',
-      source: 'locali',
-      filter: ['any', 
-        ['==', ['geometry-type'], 'Polygon'],
-        ['==', ['geometry-type'], 'MultiPolygon']
-      ],
-      paint: {
-        'line-color': [
-          'case',
-          ['==', ['get', 'stato'], 'sfitto'],
-          '#dc2626',
-          ['==', ['get', 'stato'], 'occupato'],
-          '#16a34a',
-          '#ca8a04'
-        ],
-        'line-width': 2
-      }
-    });
-
-    // Add points layer
-    map.addLayer({
-      id: 'locali-points',
-      type: 'circle',
-      source: 'locali',
-      filter: ['==', ['geometry-type'], 'Point'],
-      paint: {
-        'circle-radius': 8,
-        'circle-color': [
-          'case',
-          ['==', ['get', 'stato'], 'sfitto'],
-          '#f87171',
-          ['==', ['get', 'stato'], 'occupato'],
-          '#4ade80',
-          '#eab308'
-        ],
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff'
-      }
-    });
-
-    // Click handler
-    const handleClick = (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: ['locali-fill', 'locali-points']
-      });
-
-      if (features.length > 0) {
-        const feature = features[0];
-        const locale = filteredLocali[feature.properties.index];
-        
-        if (popupRef.current) {
-          popupRef.current.remove();
-        }
-
-        const popupNode = document.createElement('div');
-        const root = createRoot(popupNode);
-        root.render(<LocalePopup locale={locale} />);
-
-        popupRef.current = new maplibregl.Popup({
-          closeButton: true,
-          closeOnClick: true,
-          maxWidth: '300px'
-        })
-          .setLngLat(e.lngLat)
-          .setDOMContent(popupNode)
-          .addTo(map);
-      }
-    };
-
-    map.on('click', 'locali-fill', handleClick);
-    map.on('click', 'locali-points', handleClick);
-
-    // Cursor change
-    map.on('mouseenter', 'locali-fill', () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'locali-fill', () => {
-      map.getCanvas().style.cursor = '';
-    });
-    map.on('mouseenter', 'locali-points', () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'locali-points', () => {
-      map.getCanvas().style.cursor = '';
-    });
-
-  }, [mapLoaded, filteredLocali]);
-
-
+  const center = project?.center ? [project.center[1], project.center[0]] : [41.9028, 12.4964];
+  const zoom = project?.zoom || 14;
 
   return (
     <div className="flex h-screen bg-white">
@@ -271,11 +116,59 @@ export default function MapView({ project, locali, user }) {
       />
       
       <div className="flex-1 relative">
-        <div ref={mapContainer} className="w-full h-full" />
+        <MapContainer
+          center={center}
+          zoom={zoom}
+          style={{ width: '100%', height: '100%' }}
+          className="z-0"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
+          
+          {filteredLocali.map((locale, index) => {
+            if (!locale.geometry) return null;
+
+            if (locale.geometry.type === 'Point') {
+              const coords = locale.coordinates || [0, 0];
+              return (
+                <Marker
+                  key={index}
+                  position={[coords[1], coords[0]]}
+                  icon={getMarkerIcon(locale)}
+                >
+                  <Popup>
+                    <LocalePopup locale={locale} />
+                  </Popup>
+                </Marker>
+              );
+            }
+
+            if (locale.geometry.type === 'Polygon' || locale.geometry.type === 'MultiPolygon') {
+              return (
+                <GeoJSON
+                  key={index}
+                  data={locale.geometry}
+                  style={() => getFeatureStyle(locale)}
+                >
+                  <Popup>
+                    <LocalePopup locale={locale} />
+                  </Popup>
+                </GeoJSON>
+              );
+            }
+
+            return null;
+          })}
+
+          <MapUpdater locali={filteredLocali} />
+        </MapContainer>
+
         <MapLegend />
         
         {/* Header stats bar */}
-        <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur rounded-xl px-4 py-3 flex items-center justify-between z-10 shadow-lg border border-gray-200">
+        <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur rounded-xl px-4 py-3 flex items-center justify-between z-[1000] shadow-lg border border-gray-200">
           <h2 className="text-gray-900 font-medium">Mappa Locali</h2>
           <div className="flex gap-4 text-sm text-gray-700">
             <span>Visualizzati: <strong className="text-gray-900">{filteredLocali.length}</strong></span>
