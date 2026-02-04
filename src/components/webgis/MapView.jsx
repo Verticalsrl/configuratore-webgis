@@ -80,8 +80,8 @@ export default function MapView({ project, locali, user }) {
       if (filters.search && !l.indirizzo?.toLowerCase().includes(filters.search.toLowerCase())) return false;
       if (filters.minSuperficie && l.superficie < parseFloat(filters.minSuperficie)) return false;
       if (filters.maxSuperficie && l.superficie > parseFloat(filters.maxSuperficie)) return false;
-      if (filters.foglioSearch && String(l.properties_raw?.foglio) !== filters.foglioSearch) return false;
-      if (filters.particellaSearch && String(l.properties_raw?.particella) !== filters.particellaSearch) return false;
+      if (filters.foglioSearch && filters.foglioSearch.trim() !== '' && String(l.properties_raw?.foglio || '').toLowerCase() !== filters.foglioSearch.toLowerCase().trim()) return false;
+      if (filters.particellaSearch && filters.particellaSearch.trim() !== '' && String(l.properties_raw?.particella || '').toLowerCase() !== filters.particellaSearch.toLowerCase().trim()) return false;
       return true;
     });
   }, [locali, filters]);
