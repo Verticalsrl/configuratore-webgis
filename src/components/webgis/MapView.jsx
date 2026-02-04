@@ -261,7 +261,7 @@ export default function MapView({ project, locali, user }) {
 
 
   return (
-    <div className="flex h-screen bg-slate-900">
+    <div className="flex h-screen bg-white">
       <MapSidebar
         project={project}
         stats={stats}
@@ -275,13 +275,13 @@ export default function MapView({ project, locali, user }) {
         <MapLegend />
         
         {/* Header stats bar */}
-        <div className="absolute top-4 left-4 right-4 bg-slate-800/90 backdrop-blur rounded-xl px-4 py-3 flex items-center justify-between z-10">
-          <h2 className="text-white font-medium">Mappa Locali</h2>
-          <div className="flex gap-4 text-sm text-slate-300">
-            <span>Visualizzati: <strong className="text-white">{filteredLocali.length}</strong></span>
-            <span>Sfitti: <strong className="text-red-400">{stats.sfitti}</strong></span>
-            <span>Occupati: <strong className="text-green-400">{stats.occupati}</strong></span>
-            {stats.altri > 0 && <span>Altri: <strong className="text-yellow-400">{stats.altri}</strong></span>}
+        <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur rounded-xl px-4 py-3 flex items-center justify-between z-10 shadow-lg border border-gray-200">
+          <h2 className="text-gray-900 font-medium">Mappa Locali</h2>
+          <div className="flex gap-4 text-sm text-gray-700">
+            <span>Visualizzati: <strong className="text-gray-900">{filteredLocali.length}</strong></span>
+            <span>Sfitti: <strong className="text-red-600">{stats.sfitti}</strong></span>
+            <span>Occupati: <strong className="text-green-600">{stats.occupati}</strong></span>
+            {stats.altri > 0 && <span>Altri: <strong className="text-yellow-600">{stats.altri}</strong></span>}
           </div>
         </div>
       </div>

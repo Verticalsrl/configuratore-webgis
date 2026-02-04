@@ -18,36 +18,42 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function ProjectCard({ project, onDelete, user }) {
+  const handleDelete = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete();
+  };
+
   return (
-    <Card className="bg-slate-800 border-slate-700 hover:border-blue-500 transition-all">
+    <Card className="bg-white border-gray-200 hover:border-blue-500 transition-all shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg text-white">{project.nome}</CardTitle>
+          <CardTitle className="text-lg text-gray-900">{project.nome}</CardTitle>
           {user && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </AlertDialogTrigger>
-            <AlertDialogContent className="bg-slate-800 border-slate-700">
+            <AlertDialogContent className="bg-white border-gray-200">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-white">Eliminare il progetto?</AlertDialogTitle>
-                <AlertDialogDescription className="text-slate-400">
+                <AlertDialogTitle className="text-gray-900">Eliminare il progetto?</AlertDialogTitle>
+                <AlertDialogDescription className="text-gray-600">
                   Questa azione eliminerà definitivamente il progetto e tutti i locali associati.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="bg-slate-700 text-white hover:bg-slate-600">
+                <AlertDialogCancel className="bg-gray-100 text-gray-900 hover:bg-gray-200 border-gray-300">
                   Annulla
                 </AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={onDelete}
-                  className="bg-red-600 hover:bg-red-700"
+                  onClick={handleDelete}
+                  className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   Elimina
                 </AlertDialogAction>
@@ -57,34 +63,34 @@ export default function ProjectCard({ project, onDelete, user }) {
           )}
         </div>
         {project.descrizione && (
-          <p className="text-sm text-slate-400 mt-2">{project.descrizione}</p>
+          <p className="text-sm text-gray-600 mt-2">{project.descrizione}</p>
         )}
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="bg-slate-900/50 rounded-lg p-2 text-center">
-              <div className="text-slate-400 text-xs">Totale</div>
-              <div className="text-white font-semibold">{project.totale_locali || 0}</div>
+            <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-200">
+              <div className="text-gray-600 text-xs">Totale</div>
+              <div className="text-gray-900 font-semibold">{project.totale_locali || 0}</div>
             </div>
-            <div className="bg-red-900/20 rounded-lg p-2 text-center">
-              <div className="text-red-400 text-xs">Sfitti</div>
-              <div className="text-white font-semibold">{project.totale_sfitti || 0}</div>
+            <div className="bg-red-50 rounded-lg p-2 text-center border border-red-200">
+              <div className="text-red-600 text-xs">Sfitti</div>
+              <div className="text-gray-900 font-semibold">{project.totale_sfitti || 0}</div>
             </div>
-            <div className="bg-green-900/20 rounded-lg p-2 text-center">
-              <div className="text-green-400 text-xs">Occupati</div>
-              <div className="text-white font-semibold">{project.totale_occupati || 0}</div>
+            <div className="bg-green-50 rounded-lg p-2 text-center border border-green-200">
+              <div className="text-green-600 text-xs">Occupati</div>
+              <div className="text-gray-900 font-semibold">{project.totale_occupati || 0}</div>
             </div>
           </div>
 
           {project.totale_altri > 0 && (
-            <div className="bg-yellow-900/20 rounded-lg p-2 text-center text-sm">
-              <span className="text-yellow-400">Altri: </span>
-              <span className="text-white font-semibold">{project.totale_altri}</span>
+            <div className="bg-yellow-50 rounded-lg p-2 text-center text-sm border border-yellow-200">
+              <span className="text-yellow-600">Altri: </span>
+              <span className="text-gray-900 font-semibold">{project.totale_altri}</span>
             </div>
           )}
 
-          <div className="flex items-center text-xs text-slate-400 gap-2">
+          <div className="flex items-center text-xs text-gray-500 gap-2">
             <Calendar className="w-3 h-3" />
             {format(new Date(project.created_date), 'dd/MM/yyyy')}
           </div>
