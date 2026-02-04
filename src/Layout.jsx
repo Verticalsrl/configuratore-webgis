@@ -34,34 +34,40 @@ export default function Layout({ children, currentPageName }) {
           color: #0f172a;
         }
         
-        /* MapLibre overrides for light theme */
-        .maplibregl-popup-content {
+        /* Leaflet overrides for light theme */
+        .leaflet-popup-content-wrapper {
           background: white !important;
           border-radius: 12px !important;
           padding: 16px !important;
           box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
         }
-        
-        .maplibregl-popup-close-button {
+
+        .leaflet-popup-close-button {
           font-size: 18px;
           padding: 4px 8px;
           color: #0f172a;
         }
-        
-        .maplibregl-ctrl-group {
+
+        .leaflet-bar {
           background: white !important;
           border: 1px solid #e2e8f0 !important;
           border-radius: 8px !important;
           overflow: hidden;
         }
-        
-        .maplibregl-ctrl-group button {
+
+        .leaflet-bar a {
           background: white !important;
           border: none !important;
+          color: #0f172a !important;
         }
-        
-        .maplibregl-ctrl-group button:hover {
+
+        .leaflet-bar a:hover {
           background: #f1f5f9 !important;
+        }
+
+        .custom-marker {
+          background: none !important;
+          border: none !important;
         }
       `}</style>
       
