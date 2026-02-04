@@ -41,7 +41,7 @@ export default function ProjectDetail() {
 
   if (projectLoading || localiLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
       </div>
     );
@@ -49,9 +49,9 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Progetto non trovato</h2>
+          <h2 className="text-2xl font-bold mb-4 text-gray-900">Progetto non trovato</h2>
           <Link to={createPageUrl('Projects')}>
             <Button className="bg-blue-600 hover:bg-blue-700">
               <ArrowLeft className="w-4 h-4 mr-2" />
