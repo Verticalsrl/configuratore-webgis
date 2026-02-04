@@ -38,6 +38,10 @@ export default function Projects() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+    onError: (error) => {
+      console.error('Errore durante l\'eliminazione del progetto:', error);
+      alert('Errore durante l\'eliminazione del progetto. Riprova.');
     }
   });
 
@@ -67,14 +71,14 @@ export default function Projects() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               I Miei Progetti
             </h1>
-            <p className="text-slate-400">Gestisci i tuoi progetti WebGIS</p>
+            <p className="text-gray-600">Gestisci i tuoi progetti WebGIS</p>
           </div>
           {user && (
             <Button
@@ -93,9 +97,9 @@ export default function Projects() {
           </div>
         ) : projects.length === 0 ? (
           <div className="text-center py-20">
-            <Building2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Nessun progetto</h3>
-            <p className="text-slate-400 mb-6">Crea il tuo primo progetto per iniziare</p>
+            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2 text-gray-900">Nessun progetto</h3>
+            <p className="text-gray-600 mb-6">Crea il tuo primo progetto per iniziare</p>
             {user && (
               <Button
                 onClick={() => setShowWizard(true)}
