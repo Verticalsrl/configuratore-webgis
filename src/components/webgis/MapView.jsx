@@ -40,38 +40,44 @@ export default function MapView({ project, locali, user }) {
   }, [filteredLocali]);
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || mapRef.current) return;
 
-    // Check if MapLibre is already loaded
-    if (window.maplibregl && !mapRef.current) {
-      initMap();
-      return;
-    }
-
-    // Check if scripts are already being loaded
-    if (document.querySelector('script[src*="maplibre-gl.js"]')) {
-      return;
-    }
-
-    // Load CSS first
-    const link = document.createElement('link');
-    link.href = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-
-    // Then load JS
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.maplibregl && !mapRef.current) {
+    const loadMapLibre = () => {
+      // Check if already loaded
+      if (window.maplibregl) {
         initMap();
+        return;
       }
+
+      // Check if already loading
+      const existingScript = document.querySelector('script[src*="maplibre-gl"]');
+      if (existingScript) {
+        existingScript.addEventListener('load', () => {
+          if (window.maplibregl) initMap();
+        });
+        return;
+      }
+
+      // Load CSS
+      if (!document.querySelector('link[href*="maplibre-gl.css"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css';
+        document.head.appendChild(link);
+      }
+
+      // Load JS
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js';
+      script.onload = () => {
+        if (window.maplibregl) {
+          initMap();
+        }
+      };
+      document.head.appendChild(script);
     };
-    script.onerror = (e) => {
-      console.error('Error loading MapLibre GL JS:', e);
-    };
-    document.head.appendChild(script);
+
+    loadMapLibre();
 
     return () => {
       if (mapRef.current) {
