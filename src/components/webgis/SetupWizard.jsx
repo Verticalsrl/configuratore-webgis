@@ -175,7 +175,10 @@ export default function SetupWizard({ onComplete, onCancel }) {
         config,
         center,
         zoom: 14,
-        ...stats
+        totale_locali: stats.totale,
+        totale_sfitti: stats.sfitti,
+        totale_occupati: stats.occupati,
+        totale_altri: stats.altri
       };
       
       addLog('Configurazione completata!', 'success');

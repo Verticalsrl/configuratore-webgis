@@ -67,6 +67,7 @@ export default function ProjectSettings() {
     a.href = url;
     a.download = `${project?.nome || 'progetto'}_export.geojson`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleClearProject = async () => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Trash2, Eye } from 'lucide-react';
+import { Calendar, Trash2, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { format } from 'date-fns';
@@ -90,10 +90,12 @@ export default function ProjectCard({ project, onDelete, user }) {
             </div>
           )}
 
-          <div className="flex items-center text-xs text-gray-500 gap-2">
-            <Calendar className="w-3 h-3" />
-            {format(new Date(project.created_date), 'dd/MM/yyyy')}
-          </div>
+          {project.created_date && (
+            <div className="flex items-center text-xs text-gray-500 gap-2">
+              <Calendar className="w-3 h-3" />
+              {format(new Date(project.created_date), 'dd/MM/yyyy')}
+            </div>
+          )}
 
           <Link to={createPageUrl('ProjectDetail') + '?id=' + project.id}>
             <Button className="w-full bg-blue-600 hover:bg-blue-700">
