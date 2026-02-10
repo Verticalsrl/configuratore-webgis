@@ -30,6 +30,7 @@ const createCustomIcon = (color) => {
 const sfittoIcon = createCustomIcon('#f87171');
 const occupatoIcon = createCustomIcon('#4ade80');
 const altriIcon = createCustomIcon('#eab308');
+const attivitaIcon = createCustomIcon('#3b82f6'); // Blue icon for attività
 
 function MapUpdater({ locali }) {
   const map = useMap();
@@ -105,7 +106,7 @@ function BoundsTracker({ onBoundsChange }) {
   return null;
 }
 
-export default function MapView({ project, locali, user }) {
+export default function MapView({ project, locali, attivita = [], user }) {
   const [selectedLocale, setSelectedLocale] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const queryClient = useQueryClient();
@@ -118,6 +119,7 @@ export default function MapView({ project, locali, user }) {
     showSfitti: true,
     showOccupati: true,
     showAltri: true,
+    showAttivita: true,
     search: '',
     minSuperficie: '',
     maxSuperficie: '',
@@ -281,6 +283,45 @@ export default function MapView({ project, locali, user }) {
               }
 
               return null;
+            })}
+
+            {/* Render Attività Commerciali */}
+            {filters.showAttivita && attivita.map((att, index) => {
+              if (!att.coordinates) return null;
+
+              const coords = att.coordinates;
+              return (
+                <Marker
+                  key={`attivita-${index}`}
+                  position={[coords[1], coords[0]]}
+                  icon={attivitaIcon}
+                >
+                  <Popup>
+                    <div className="text-sm">
+                      <h3 className="font-bold text-base mb-2">
+                        {att.ragione_sociale || 'Attività Commerciale'}
+                      </h3>
+                      <div className="space-y-1">
+                        {att.mestiere && (
+                          <div><strong>Mestiere:</strong> {att.mestiere}</div>
+                        )}
+                        {att.ateco2025 && (
+                          <div><strong>ATECO:</strong> {att.ateco2025}</div>
+                        )}
+                        {att.strada && (
+                          <div><strong>Indirizzo:</strong> {att.strada} {att.civico}</div>
+                        )}
+                        {att.comune && (
+                          <div><strong>Comune:</strong> {att.comune}</div>
+                        )}
+                        {att.partita_iva && (
+                          <div><strong>P.IVA:</strong> {att.partita_iva}</div>
+                        )}
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
             })}
 
             <MapUpdater locali={filteredLocali} />
