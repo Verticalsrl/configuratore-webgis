@@ -98,6 +98,17 @@ export default function MapSidebar({
                   Altri
                 </label>
               </div>
+              <div className="flex items-center gap-2 pt-2 border-t border-gray-200">
+                <Checkbox
+                  id="show-attivita"
+                  checked={filters.showAttivita}
+                  onCheckedChange={(checked) => onFilterChange({ ...filters, showAttivita: checked })}
+                />
+                <label htmlFor="show-attivita" className="text-sm text-gray-900 flex items-center gap-2 cursor-pointer">
+                  <span className="w-3 h-3 rounded-full bg-blue-500" />
+                  Attività Commerciali
+                </label>
+              </div>
             </div>
           </div>
 

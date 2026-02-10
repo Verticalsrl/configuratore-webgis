@@ -10,10 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Download, Upload, Trash2, Loader2, Pencil, Check, X } from 'lucide-react';
+import { Download, Upload, Trash2, Loader2, Pencil, Check, X, Building2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ImportGeoJSONModal from './ImportGeoJSONModal';
+import ImportAttivitaModal from './ImportAttivitaModal';
 
 const DEFAULT_POPUP_FIELDS = ['indirizzo', 'superficie', 'canone', 'conduttore', 'stato'];
 
@@ -27,6 +28,7 @@ const POPUP_FIELD_LABELS = {
 
 export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showImportAttivitaModal, setShowImportAttivitaModal] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -87,6 +89,12 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
     queryClient.invalidateQueries({ queryKey: ['locali', project.id] });
     queryClient.invalidateQueries({ queryKey: ['projects'] });
     setShowImportModal(false);
+  };
+
+  const handleImportAttivitaSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['attivita', project.id] });
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    setShowImportAttivitaModal(false);
   };
 
   const handleStartRename = () => {
@@ -188,22 +196,37 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
 
             {/* Data Tab - Import/Export/Clear */}
             <TabsContent value="data" className="space-y-3 mt-4">
-              <Button
-                onClick={handleExport}
-                variant="outline"
-                className="w-full border-gray-300 hover:bg-gray-50 text-gray-900 justify-start"
-              >
-                <Download className="w-5 h-5 mr-3" />
-                Esporta GeoJSON
-              </Button>
-              <Button
-                onClick={() => setShowImportModal(true)}
-                variant="outline"
-                className="w-full border-gray-300 hover:bg-gray-50 text-gray-900 justify-start"
-              >
-                <Upload className="w-5 h-5 mr-3" />
-                Importa GeoJSON
-              </Button>
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-gray-900">Locali Commerciali</h4>
+                <Button
+                  onClick={handleExport}
+                  variant="outline"
+                  className="w-full border-gray-300 hover:bg-gray-50 text-gray-900 justify-start"
+                >
+                  <Download className="w-5 h-5 mr-3" />
+                  Esporta GeoJSON
+                </Button>
+                <Button
+                  onClick={() => setShowImportModal(true)}
+                  variant="outline"
+                  className="w-full border-gray-300 hover:bg-gray-50 text-gray-900 justify-start"
+                >
+                  <Upload className="w-5 h-5 mr-3" />
+                  Importa GeoJSON
+                </Button>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200 space-y-2">
+                <h4 className="text-sm font-medium text-gray-900">Attività Commerciali</h4>
+                <Button
+                  onClick={() => setShowImportAttivitaModal(true)}
+                  variant="outline"
+                  className="w-full border-gray-300 hover:bg-gray-50 text-gray-900 justify-start"
+                >
+                  <Building2 className="w-5 h-5 mr-3" />
+                  Importa Attività Commerciali
+                </Button>
+              </div>
 
               <div className="pt-4 mt-4 border-t border-gray-200">
                 <p className="text-xs text-gray-500 mb-3">
@@ -252,6 +275,13 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
         onOpenChange={setShowImportModal}
         project={project}
         onSuccess={handleImportSuccess}
+      />
+
+      <ImportAttivitaModal
+        open={showImportAttivitaModal}
+        onOpenChange={setShowImportAttivitaModal}
+        project={project}
+        onSuccess={handleImportAttivitaSuccess}
       />
     </>
   );

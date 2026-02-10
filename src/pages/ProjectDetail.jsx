@@ -28,7 +28,13 @@ export default function ProjectDetail() {
     enabled: !!projectId
   });
 
-  if (projectLoading || localiLoading) {
+  const { data: attivita = [], isLoading: attivitaLoading } = useQuery({
+    queryKey: ['attivita', projectId],
+    queryFn: () => base44.entities.AttivitaCommerciale.filter({ project_id: projectId }),
+    enabled: !!projectId
+  });
+
+  if (projectLoading || localiLoading || attivitaLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
@@ -52,5 +58,5 @@ export default function ProjectDetail() {
     );
   }
 
-  return <MapView project={project} locali={locali} user={user} />;
+  return <MapView project={project} locali={locali} attivita={attivita} user={user} />;
 }
