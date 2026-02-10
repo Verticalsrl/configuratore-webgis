@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, ArrowLeft, Download, Upload, Trash2 } from 'lucide-react';
@@ -6,25 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ImportGeoJSONModal from '../components/projects/ImportGeoJSONModal';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function ProjectSettings() {
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated, navigateToLogin } = useAuth();
   const [showImportModal, setShowImportModal] = useState(false);
   const queryClient = useQueryClient();
   const urlParams = new URLSearchParams(window.location.search);
   const projectId = urlParams.get('id');
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        base44.auth.redirectToLogin();
-      }
-    };
-    fetchUser();
-  }, []);
 
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
@@ -32,7 +21,7 @@ export default function ProjectSettings() {
       const projects = await base44.entities.Progetto.filter({ id: projectId });
       return projects[0];
     },
-    enabled: !!user && !!projectId
+    enabled: !!projectId
   });
 
   const { data: locali = [], isLoading: localiLoading } = useQuery({
@@ -81,7 +70,12 @@ export default function ProjectSettings() {
     setShowImportModal(false);
   };
 
-  if (!user || projectLoading || localiLoading) {
+  if (!isAuthenticated) {
+    navigateToLogin();
+    return null;
+  }
+
+  if (projectLoading || localiLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />

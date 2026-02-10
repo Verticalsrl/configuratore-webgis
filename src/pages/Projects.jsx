@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -7,23 +7,12 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ProjectCard from '../components/projects/ProjectCard';
 import SetupWizard from '../components/webgis/SetupWizard';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Projects() {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [showWizard, setShowWizard] = useState(false);
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        setUser(null);
-      }
-    };
-    fetchUser();
-  }, []);
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],

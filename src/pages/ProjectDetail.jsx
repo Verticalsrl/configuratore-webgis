@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, ArrowLeft } from 'lucide-react';
@@ -6,23 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MapView from '../components/webgis/MapView';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function ProjectDetail() {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const urlParams = new URLSearchParams(window.location.search);
   const projectId = urlParams.get('id');
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        setUser(null);
-      }
-    };
-    fetchUser();
-  }, []);
 
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
