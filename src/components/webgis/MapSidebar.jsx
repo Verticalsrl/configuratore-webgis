@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, ArrowLeft, Settings } from 'lucide-react';
+import { Building2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -158,17 +158,6 @@ export default function MapSidebar({
 
       {/* Actions */}
       <div className="pt-4 mt-4 border-t border-gray-200 space-y-2">
-        {user && (
-          <Link to={createPageUrl('ProjectSettings') + '?id=' + project.id}>
-            <Button
-              variant="outline"
-              className="w-full bg-white border-gray-300 hover:bg-gray-50 text-gray-900"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Impostazioni
-            </Button>
-          </Link>
-        )}
         <Link to={createPageUrl('Projects')}>
           <Button
             variant="outline"

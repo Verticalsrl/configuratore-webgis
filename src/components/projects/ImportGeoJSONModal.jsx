@@ -152,17 +152,17 @@ export default function ImportGeoJSONModal({ open, onOpenChange, project, onSucc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white">
+      <DialogContent className="bg-white border-gray-200 text-gray-900">
         <DialogHeader>
-          <DialogTitle>Importa GeoJSON</DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogTitle className="text-gray-900">Importa GeoJSON</DialogTitle>
+          <DialogDescription className="text-gray-500">
             Carica un nuovo file GeoJSON per aggiornare tutti i locali del progetto.
             I locali esistenti verranno sostituiti.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <input
               type="file"
               accept=".geojson,.json"
@@ -171,17 +171,17 @@ export default function ImportGeoJSONModal({ open, onOpenChange, project, onSucc
               id="geojson-upload"
             />
             <label htmlFor="geojson-upload" className="cursor-pointer">
-              <Upload className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-              <p className="text-sm text-slate-300 mb-1">
+              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-sm text-gray-600 mb-1">
                 {file ? file.name : 'Clicca per selezionare il file GeoJSON'}
               </p>
-              <p className="text-xs text-slate-500">Formato: .geojson o .json</p>
+              <p className="text-xs text-gray-400">Formato: .geojson o .json</p>
             </label>
           </div>
 
           {result && (
             <div className={`p-4 rounded-lg flex items-start gap-3 ${
-              result.success ? 'bg-green-900/20 text-green-400' : 'bg-red-900/20 text-red-400'
+              result.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
             }`}>
               {result.success ? (
                 <CheckCircle className="w-5 h-5 flex-shrink-0" />
@@ -192,8 +192,8 @@ export default function ImportGeoJSONModal({ open, onOpenChange, project, onSucc
                 <p className="font-medium">{result.message}</p>
                 {result.stats && (
                   <p className="text-xs mt-1 opacity-80">
-                    Sfitti: {result.stats.totale_sfitti} | 
-                    Occupati: {result.stats.totale_occupati} | 
+                    Sfitti: {result.stats.totale_sfitti} |
+                    Occupati: {result.stats.totale_occupati} |
                     Altri: {result.stats.totale_altri}
                   </p>
                 )}
@@ -206,7 +206,7 @@ export default function ImportGeoJSONModal({ open, onOpenChange, project, onSucc
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isProcessing}
-              className="bg-slate-700 border-slate-600 hover:bg-slate-600"
+              className="border-gray-300 hover:bg-gray-50"
             >
               Annulla
             </Button>
