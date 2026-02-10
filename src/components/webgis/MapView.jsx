@@ -31,7 +31,7 @@ const altriIcon = createCustomIcon('#eab308');
 
 function MapUpdater({ locali }) {
   const map = useMap();
-  
+
   React.useEffect(() => {
     if (locali.length === 0) return;
 
@@ -61,8 +61,55 @@ function MapUpdater({ locali }) {
   return null;
 }
 
+function getLocaleCenter(locale) {
+  if (locale.coordinates) {
+    return [locale.coordinates[1], locale.coordinates[0]];
+  }
+  if (locale.geometry?.type === 'Point' && locale.geometry.coordinates) {
+    return [locale.geometry.coordinates[1], locale.geometry.coordinates[0]];
+  }
+  if (locale.geometry?.type === 'Polygon' && locale.geometry.coordinates?.[0]) {
+    const coords = locale.geometry.coordinates[0];
+    let sumLat = 0, sumLng = 0;
+    coords.forEach(c => { sumLat += c[1]; sumLng += c[0]; });
+    return [sumLat / coords.length, sumLng / coords.length];
+  }
+  if (locale.geometry?.type === 'MultiPolygon' && locale.geometry.coordinates?.[0]?.[0]) {
+    const coords = locale.geometry.coordinates[0][0];
+    let sumLat = 0, sumLng = 0;
+    coords.forEach(c => { sumLat += c[1]; sumLng += c[0]; });
+    return [sumLat / coords.length, sumLng / coords.length];
+  }
+  return null;
+}
+
+function BoundsTracker({ onBoundsChange }) {
+  const map = useMap();
+
+  React.useEffect(() => {
+    const updateBounds = () => {
+      onBoundsChange(map.getBounds());
+    };
+    map.on('moveend', updateBounds);
+    map.on('zoomend', updateBounds);
+    // Fire initial bounds
+    setTimeout(updateBounds, 200);
+    return () => {
+      map.off('moveend', updateBounds);
+      map.off('zoomend', updateBounds);
+    };
+  }, [map, onBoundsChange]);
+
+  return null;
+}
+
 export default function MapView({ project, locali, user }) {
   const [selectedLocale, setSelectedLocale] = useState(null);
+  const [mapBounds, setMapBounds] = useState(null);
+
+  const handleBoundsChange = useCallback((bounds) => {
+    setMapBounds(bounds);
+  }, []);
 
   const [filters, setFilters] = useState({
     showSfitti: true,
@@ -89,14 +136,23 @@ export default function MapView({ project, locali, user }) {
     });
   }, [locali, filters]);
 
+  const visibleLocali = useMemo(() => {
+    if (!mapBounds) return filteredLocali;
+    return filteredLocali.filter((l) => {
+      const center = getLocaleCenter(l);
+      if (!center) return false;
+      return mapBounds.contains(center);
+    });
+  }, [filteredLocali, mapBounds]);
+
   const stats = useMemo(() => {
     return {
-      totale: filteredLocali.length,
-      sfitti: filteredLocali.filter((l) => l.stato === 'sfitto').length,
-      occupati: filteredLocali.filter((l) => l.stato === 'occupato').length,
-      altri: filteredLocali.filter((l) => l.stato === 'altri').length
+      totale: visibleLocali.length,
+      sfitti: visibleLocali.filter((l) => l.stato === 'sfitto').length,
+      occupati: visibleLocali.filter((l) => l.stato === 'occupato').length,
+      altri: visibleLocali.filter((l) => l.stato === 'altri').length
     };
-  }, [filteredLocali]);
+  }, [visibleLocali]);
 
   const getFeatureStyle = (locale) => {
     const colors = {
@@ -206,20 +262,10 @@ export default function MapView({ project, locali, user }) {
             })}
 
             <MapUpdater locali={filteredLocali} />
+            <BoundsTracker onBoundsChange={handleBoundsChange} />
           </MapContainer>
 
           <MapLegend />
-
-          {/* Header stats bar */}
-          <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur rounded-xl px-4 py-3 flex items-center justify-between z-[1000] shadow-lg border border-gray-200">
-            <h2 className="text-gray-900 font-medium">Mappa Locali</h2>
-            <div className="flex gap-4 text-sm text-gray-700">
-              <span>Visualizzati: <strong className="text-gray-900">{filteredLocali.length}</strong></span>
-              <span>Sfitti: <strong className="text-red-600">{stats.sfitti}</strong></span>
-              <span>Occupati: <strong className="text-green-600">{stats.occupati}</strong></span>
-              {stats.altri > 0 && <span>Altri: <strong className="text-yellow-600">{stats.altri}</strong></span>}
-            </div>
-          </div>
         </div>
 
         {selectedLocale && (
