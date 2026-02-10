@@ -1,52 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
-import { GOOGLE_MAPS_API_KEY } from '@/lib/google-config';
+import { Eye } from 'lucide-react';
 
-function getLocaleCoords(locale) {
-  if (locale.coordinates) {
-    return { lat: locale.coordinates[1], lng: locale.coordinates[0] };
-  }
-  if (locale.geometry?.type === 'Point' && locale.geometry.coordinates) {
-    return { lat: locale.geometry.coordinates[1], lng: locale.geometry.coordinates[0] };
-  }
-  return null;
-}
-
-export default function LocalePopup({ locale }) {
-  const [svError, setSvError] = useState(false);
-
+export default function LocalePopup({ locale, onOpenStreetView }) {
   if (!locale) return null;
 
-  const coords = getLocaleCoords(locale);
-  const streetViewUrl = coords && GOOGLE_MAPS_API_KEY
-    ? `https://maps.googleapis.com/maps/api/streetview?size=320x180&location=${coords.lat},${coords.lng}&fov=90&heading=0&pitch=0&key=${GOOGLE_MAPS_API_KEY}`
-    : null;
-  const streetViewLink = coords
-    ? `https://www.google.com/maps?q=&layer=c&cbll=${coords.lat},${coords.lng}`
-    : null;
+  const hasCoords = locale.coordinates || locale.geometry?.coordinates;
 
   return (
-    <div className="min-w-[280px]">
-      {/* Street View Image */}
-      {coords && streetViewUrl && !svError && (
-        <a href={streetViewLink} target="_blank" rel="noopener noreferrer" className="block">
-          <img
-            src={streetViewUrl}
-            alt="Street View"
-            className="w-full h-[140px] object-cover rounded-lg mb-3 cursor-pointer hover:opacity-90 transition-opacity"
-            onError={() => setSvError(true)}
-          />
-        </a>
-      )}
-      {coords && (streetViewUrl === null || svError) && (
-        <a
-          href={streetViewLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center w-full h-[80px] bg-slate-100 rounded-lg mb-3 text-sm text-blue-600 hover:bg-slate-200 transition-colors"
+    <div className="min-w-[260px]">
+      {/* Street View button */}
+      {hasCoords && onOpenStreetView && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenStreetView(locale);
+          }}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 mb-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
         >
-          Apri Street View &rarr;
-        </a>
+          <Eye className="w-4 h-4" />
+          Street View
+        </button>
       )}
 
       <div className="text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200">

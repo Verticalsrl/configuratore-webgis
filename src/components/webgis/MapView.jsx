@@ -1,10 +1,11 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapSidebar from './MapSidebar';
 import MapLegend from './MapLegend';
 import LocalePopup from './LocalePopup';
+import StreetViewPanel from './StreetViewPanel';
 
 // Fix for default marker icons in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -61,6 +62,8 @@ function MapUpdater({ locali }) {
 }
 
 export default function MapView({ project, locali, user }) {
+  const [selectedLocale, setSelectedLocale] = useState(null);
+
   const [filters, setFilters] = useState({
     showSfitti: true,
     showOccupati: true,
@@ -128,94 +131,103 @@ export default function MapView({ project, locali, user }) {
         onFilterChange={setFilters}
         user={user}
       />
-      
-      <div className="flex-1 relative">
-        <MapContainer
-          center={center}
-          zoom={zoom}
-          style={{ width: '100%', height: '100%' }}
-          className="z-0"
-        >
-          <LayersControl position="topright">
-            <LayersControl.BaseLayer name="OpenStreetMap">
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-            </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer name="Google Strade" checked>
-              <TileLayer
-                attribution='&copy; Google'
-                url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-                maxZoom={22}
-              />
-            </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer name="Google Satellite">
-              <TileLayer
-                attribution='&copy; Google'
-                url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-                maxZoom={22}
-              />
-            </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer name="Google Ibrida">
-              <TileLayer
-                attribution='&copy; Google'
-                url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-                maxZoom={22}
-              />
-            </LayersControl.BaseLayer>
-          </LayersControl>
-          
-          {filteredLocali.map((locale, index) => {
-            if (!locale.geometry) return null;
 
-            if (locale.geometry.type === 'Point') {
-              const coords = locale.coordinates || [0, 0];
-              return (
-                <Marker
-                  key={index}
-                  position={[coords[1], coords[0]]}
-                  icon={getMarkerIcon(locale)}
-                >
-                  <Popup>
-                    <LocalePopup locale={locale} />
-                  </Popup>
-                </Marker>
-              );
-            }
+      <div className="flex-1 relative flex">
+        <div className={selectedLocale ? 'flex-1' : 'w-full'} style={{ minWidth: 0 }}>
+          <MapContainer
+            center={center}
+            zoom={zoom}
+            style={{ width: '100%', height: '100%' }}
+            className="z-0"
+          >
+            <LayersControl position="topright">
+              <LayersControl.BaseLayer name="OpenStreetMap">
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="Google Strade" checked>
+                <TileLayer
+                  attribution='&copy; Google'
+                  url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+                  maxZoom={22}
+                />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="Google Satellite">
+                <TileLayer
+                  attribution='&copy; Google'
+                  url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+                  maxZoom={22}
+                />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="Google Ibrida">
+                <TileLayer
+                  attribution='&copy; Google'
+                  url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+                  maxZoom={22}
+                />
+              </LayersControl.BaseLayer>
+            </LayersControl>
 
-            if (locale.geometry.type === 'Polygon' || locale.geometry.type === 'MultiPolygon') {
-              return (
-                <GeoJSON
-                  key={index}
-                  data={locale.geometry}
-                  style={() => getFeatureStyle(locale)}
-                >
-                  <Popup>
-                    <LocalePopup locale={locale} />
-                  </Popup>
-                </GeoJSON>
-              );
-            }
+            {filteredLocali.map((locale, index) => {
+              if (!locale.geometry) return null;
 
-            return null;
-          })}
+              if (locale.geometry.type === 'Point') {
+                const coords = locale.coordinates || [0, 0];
+                return (
+                  <Marker
+                    key={index}
+                    position={[coords[1], coords[0]]}
+                    icon={getMarkerIcon(locale)}
+                  >
+                    <Popup>
+                      <LocalePopup locale={locale} onOpenStreetView={setSelectedLocale} />
+                    </Popup>
+                  </Marker>
+                );
+              }
 
-          <MapUpdater locali={filteredLocali} />
-        </MapContainer>
+              if (locale.geometry.type === 'Polygon' || locale.geometry.type === 'MultiPolygon') {
+                return (
+                  <GeoJSON
+                    key={index}
+                    data={locale.geometry}
+                    style={() => getFeatureStyle(locale)}
+                  >
+                    <Popup>
+                      <LocalePopup locale={locale} onOpenStreetView={setSelectedLocale} />
+                    </Popup>
+                  </GeoJSON>
+                );
+              }
 
-        <MapLegend />
-        
-        {/* Header stats bar */}
-        <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur rounded-xl px-4 py-3 flex items-center justify-between z-[1000] shadow-lg border border-gray-200">
-          <h2 className="text-gray-900 font-medium">Mappa Locali</h2>
-          <div className="flex gap-4 text-sm text-gray-700">
-            <span>Visualizzati: <strong className="text-gray-900">{filteredLocali.length}</strong></span>
-            <span>Sfitti: <strong className="text-red-600">{stats.sfitti}</strong></span>
-            <span>Occupati: <strong className="text-green-600">{stats.occupati}</strong></span>
-            {stats.altri > 0 && <span>Altri: <strong className="text-yellow-600">{stats.altri}</strong></span>}
+              return null;
+            })}
+
+            <MapUpdater locali={filteredLocali} />
+          </MapContainer>
+
+          <MapLegend />
+
+          {/* Header stats bar */}
+          <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur rounded-xl px-4 py-3 flex items-center justify-between z-[1000] shadow-lg border border-gray-200">
+            <h2 className="text-gray-900 font-medium">Mappa Locali</h2>
+            <div className="flex gap-4 text-sm text-gray-700">
+              <span>Visualizzati: <strong className="text-gray-900">{filteredLocali.length}</strong></span>
+              <span>Sfitti: <strong className="text-red-600">{stats.sfitti}</strong></span>
+              <span>Occupati: <strong className="text-green-600">{stats.occupati}</strong></span>
+              {stats.altri > 0 && <span>Altri: <strong className="text-yellow-600">{stats.altri}</strong></span>}
+            </div>
           </div>
         </div>
+
+        {selectedLocale && (
+          <StreetViewPanel
+            locale={selectedLocale}
+            onClose={() => setSelectedLocale(null)}
+          />
+        )}
       </div>
     </div>
   );
