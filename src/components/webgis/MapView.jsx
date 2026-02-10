@@ -1,5 +1,5 @@
 import React, { useRef, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapSidebar from './MapSidebar';
@@ -136,10 +136,35 @@ export default function MapView({ project, locali, user }) {
           style={{ width: '100%', height: '100%' }}
           className="z-0"
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer name="OpenStreetMap">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Google Strade" checked>
+              <TileLayer
+                attribution='&copy; Google'
+                url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+                maxZoom={22}
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Google Satellite">
+              <TileLayer
+                attribution='&copy; Google'
+                url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+                maxZoom={22}
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Google Ibrida">
+              <TileLayer
+                attribution='&copy; Google'
+                url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+                maxZoom={22}
+              />
+            </LayersControl.BaseLayer>
+          </LayersControl>
           
           {filteredLocali.map((locale, index) => {
             if (!locale.geometry) return null;
