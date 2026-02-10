@@ -6,6 +6,8 @@ import MapSidebar from './MapSidebar';
 import MapLegend from './MapLegend';
 import LocalePopup from './LocalePopup';
 import StreetViewPanel from './StreetViewPanel';
+import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Fix for default marker icons in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -106,6 +108,7 @@ function BoundsTracker({ onBoundsChange }) {
 export default function MapView({ project, locali, user }) {
   const [selectedLocale, setSelectedLocale] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
+  const queryClient = useQueryClient();
 
   const handleBoundsChange = useCallback((bounds) => {
     setMapBounds(bounds);
@@ -121,6 +124,13 @@ export default function MapView({ project, locali, user }) {
     foglioSearch: '',
     particellaSearch: ''
   });
+
+  const popupFields = project?.config?.popup_fields || ['indirizzo', 'superficie', 'canone', 'conduttore', 'stato'];
+
+  const handleUpdateLocale = useCallback(async (localeId, data) => {
+    await base44.entities.Locale.update(localeId, data);
+    queryClient.invalidateQueries({ queryKey: ['locali', project?.id] });
+  }, [project?.id, queryClient]);
 
   const filteredLocali = useMemo(() => {
     return locali.filter((l) => {
@@ -238,7 +248,13 @@ export default function MapView({ project, locali, user }) {
                     icon={getMarkerIcon(locale)}
                   >
                     <Popup>
-                      <LocalePopup locale={locale} onOpenStreetView={setSelectedLocale} />
+                      <LocalePopup
+                        locale={locale}
+                        onOpenStreetView={setSelectedLocale}
+                        user={user}
+                        popupFields={popupFields}
+                        onUpdateLocale={user ? handleUpdateLocale : undefined}
+                      />
                     </Popup>
                   </Marker>
                 );
@@ -252,7 +268,13 @@ export default function MapView({ project, locali, user }) {
                     style={() => getFeatureStyle(locale)}
                   >
                     <Popup>
-                      <LocalePopup locale={locale} onOpenStreetView={setSelectedLocale} />
+                      <LocalePopup
+                        locale={locale}
+                        onOpenStreetView={setSelectedLocale}
+                        user={user}
+                        popupFields={popupFields}
+                        onUpdateLocale={user ? handleUpdateLocale : undefined}
+                      />
                     </Popup>
                   </GeoJSON>
                 );
