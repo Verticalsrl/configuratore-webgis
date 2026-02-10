@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Trash2, Eye, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +22,19 @@ import ProjectSettingsDialog from './ProjectSettingsDialog';
 
 export default function ProjectCard({ project, onDelete, user }) {
   const [showSettings, setShowSettings] = useState(false);
+
+  const { data: locali = [] } = useQuery({
+    queryKey: ['locali', project.id],
+    queryFn: () => base44.entities.Locale.filter({ project_id: project.id }),
+    staleTime: 60000,
+  });
+
+  const stats = useMemo(() => ({
+    totale: locali.length,
+    sfitti: locali.filter(l => l.stato === 'sfitto').length,
+    occupati: locali.filter(l => l.stato === 'occupato').length,
+    altri: locali.filter(l => l.stato === 'altri').length,
+  }), [locali]);
 
   const handleDelete = () => {
     onDelete();
@@ -83,22 +98,22 @@ export default function ProjectCard({ project, onDelete, user }) {
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-200">
                 <div className="text-gray-600 text-xs">Totale</div>
-                <div className="text-gray-900 font-semibold">{project.totale_locali || 0}</div>
+                <div className="text-gray-900 font-semibold">{stats.totale}</div>
               </div>
               <div className="bg-red-50 rounded-lg p-2 text-center border border-red-200">
                 <div className="text-red-600 text-xs">Sfitti</div>
-                <div className="text-gray-900 font-semibold">{project.totale_sfitti || 0}</div>
+                <div className="text-gray-900 font-semibold">{stats.sfitti}</div>
               </div>
               <div className="bg-green-50 rounded-lg p-2 text-center border border-green-200">
                 <div className="text-green-600 text-xs">Occupati</div>
-                <div className="text-gray-900 font-semibold">{project.totale_occupati || 0}</div>
+                <div className="text-gray-900 font-semibold">{stats.occupati}</div>
               </div>
             </div>
 
-            {project.totale_altri > 0 && (
+            {stats.altri > 0 && (
               <div className="bg-yellow-50 rounded-lg p-2 text-center text-sm border border-yellow-200">
                 <span className="text-yellow-600">Altri: </span>
-                <span className="text-gray-900 font-semibold">{project.totale_altri}</span>
+                <span className="text-gray-900 font-semibold">{stats.altri}</span>
               </div>
             )}
 
