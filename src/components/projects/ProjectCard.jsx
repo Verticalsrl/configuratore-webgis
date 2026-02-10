@@ -18,9 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function ProjectCard({ project, onDelete, user }) {
-  const handleDelete = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDelete = () => {
     onDelete();
   };
 
