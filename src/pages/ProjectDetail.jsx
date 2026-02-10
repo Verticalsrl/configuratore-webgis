@@ -30,7 +30,15 @@ export default function ProjectDetail() {
 
   const { data: attivita = [], isLoading: attivitaLoading } = useQuery({
     queryKey: ['attivita', projectId],
-    queryFn: () => base44.entities.AttivitaCommerciale.filter({ project_id: projectId }),
+    queryFn: async () => {
+      try {
+        return await base44.entities.AttivitaCommerciale.filter({ project_id: projectId });
+      } catch (error) {
+        // Se l'entità non esiste ancora, ritorna array vuoto
+        console.warn('AttivitaCommerciale entity not found in Base44. Please create it first.');
+        return [];
+      }
+    },
     enabled: !!projectId
   });
 

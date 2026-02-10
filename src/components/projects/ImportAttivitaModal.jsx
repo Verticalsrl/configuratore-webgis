@@ -229,9 +229,12 @@ export default function ImportAttivitaModal({ open, onOpenChange, project, onSuc
       }, 2000);
 
     } catch (error) {
+      const isEntityMissing = error.message?.includes('not found') || error.message?.includes('entity');
       setResult({
         success: false,
-        message: `Errore: ${error.message}`
+        message: isEntityMissing
+          ? `L'entità AttivitaCommerciale non esiste nel database Base44. Per favore, crea prima l'entità seguendo le istruzioni in docs/schema-attivita-commerciali.md`
+          : `Errore: ${error.message}`
       });
     } finally {
       setIsProcessing(false);
