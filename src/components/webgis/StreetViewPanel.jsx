@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, ExternalLink } from 'lucide-react';
+import { X, ExternalLink, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GOOGLE_MAPS_API_KEY } from '@/lib/google-config';
 
@@ -26,7 +26,16 @@ export default function StreetViewPanel({ locale, onClose }) {
   const externalUrl = `https://www.google.com/maps?q=&layer=c&cbll=${coords.lat},${coords.lng}`;
 
   return (
-    <div className="w-[420px] h-full bg-white border-l border-gray-200 flex flex-col z-10">
+    <div className="w-[420px] h-full bg-white border-l border-gray-200 flex flex-col z-10 animate-in slide-in-from-right duration-300 relative">
+      {/* Slide handle to close */}
+      <button
+        onClick={onClose}
+        className="absolute -left-6 top-1/2 -translate-y-1/2 w-6 h-16 bg-white border border-r-0 border-gray-300 rounded-l-lg flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md z-20"
+        title="Chiudi Street View"
+      >
+        <ChevronRight className="w-4 h-4 text-gray-500" />
+      </button>
+
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50">
         <div className="min-w-0 flex-1">
