@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-
-const GOOGLE_API_KEY = 'INSERISCI_QUI_LA_TUA_API_KEY';
+import { GOOGLE_MAPS_API_KEY } from '@/lib/google-config';
 
 function getLocaleCoords(locale) {
   if (locale.coordinates) {
@@ -19,8 +18,8 @@ export default function LocalePopup({ locale }) {
   if (!locale) return null;
 
   const coords = getLocaleCoords(locale);
-  const streetViewUrl = coords && GOOGLE_API_KEY !== 'INSERISCI_QUI_LA_TUA_API_KEY'
-    ? `https://maps.googleapis.com/maps/api/streetview?size=320x180&location=${coords.lat},${coords.lng}&fov=90&heading=0&pitch=0&key=${GOOGLE_API_KEY}`
+  const streetViewUrl = coords && GOOGLE_MAPS_API_KEY
+    ? `https://maps.googleapis.com/maps/api/streetview?size=320x180&location=${coords.lat},${coords.lng}&fov=90&heading=0&pitch=0&key=${GOOGLE_MAPS_API_KEY}`
     : null;
   const streetViewLink = coords
     ? `https://www.google.com/maps?q=&layer=c&cbll=${coords.lat},${coords.lng}`
