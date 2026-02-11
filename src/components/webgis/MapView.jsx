@@ -161,16 +161,31 @@ export default function MapView({ project, locali, attivita = [], user }) {
       const metiereKey = att.mestiere?.trim();
       if (metiereKey && metiereKey !== '') {
         // Usa descrizione se disponibile, altrimenti usa il mestiere stesso
-        const descrizione = att.descrizione_mestiere?.trim() || metiereKey;
+        const descrizione = att.descrizione_mestiere?.trim();
+        const label = descrizione && descrizione !== '' ? descrizione : metiereKey;
         if (!metieriMap.has(metiereKey)) {
-          metieriMap.set(metiereKey, descrizione);
+          metieriMap.set(metiereKey, label);
         }
       }
     });
     // Ritorna array di oggetti {key, label} ordinato per label
-    return Array.from(metieriMap.entries())
+    const result = Array.from(metieriMap.entries())
       .map(([key, label]) => ({ key, label }))
       .sort((a, b) => a.label.localeCompare(b.label));
+
+    // Debug: mostra primi 3 mestieri
+    if (result.length > 0) {
+      console.log('🔍 Mestieri disponibili (primi 3):', result.slice(0, 3));
+      const primaAttivita = attivita.find(a => a.mestiere);
+      if (primaAttivita) {
+        console.log('🔍 Campi prima attività:', {
+          mestiere: primaAttivita.mestiere,
+          descrizione_mestiere: primaAttivita.descrizione_mestiere
+        });
+      }
+    }
+
+    return result;
   }, [attivita]);
 
   // Filtra attività per mestiere
