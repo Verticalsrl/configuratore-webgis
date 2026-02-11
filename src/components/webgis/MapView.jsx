@@ -146,14 +146,23 @@ export default function MapView({ project, locali, attivita = [], user }) {
   }, [project?.id, queryClient]);
 
   // Calcola lista mestieri unici dalle attività
+  // Usa descrizione_mestiere se disponibile, altrimenti mestiere
   const metieriDisponibili = useMemo(() => {
-    const mestieri = new Set();
+    const metieriMap = new Map(); // mestiere -> descrizione
     attivita.forEach(att => {
-      if (att.mestiere && att.mestiere.trim() !== '') {
-        mestieri.add(att.mestiere.trim());
+      const metiereKey = att.mestiere?.trim();
+      if (metiereKey && metiereKey !== '') {
+        // Usa descrizione se disponibile, altrimenti usa il mestiere stesso
+        const descrizione = att.descrizione_mestiere?.trim() || metiereKey;
+        if (!metieriMap.has(metiereKey)) {
+          metieriMap.set(metiereKey, descrizione);
+        }
       }
     });
-    return Array.from(mestieri).sort();
+    // Ritorna array di oggetti {key, label} ordinato per label
+    return Array.from(metieriMap.entries())
+      .map(([key, label]) => ({ key, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [attivita]);
 
   // Filtra attività per mestiere
