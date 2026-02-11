@@ -205,9 +205,11 @@ export default function MapView({ project, locali, attivita = [], user }) {
         // Cerca descrizione in più campi possibili
         let descrizione = att.descrizione_mestiere?.trim();
 
-        // Fallback: cerca DESC_MESTIERE in properties_raw
+        // Fallback: cerca DESC_MESTIERE o DES_MESTIERE in properties_raw
         if (!descrizione || descrizione === '') {
-          descrizione = att.properties_raw?.DESC_MESTIERE?.trim();
+          descrizione = att.properties_raw?.DESC_MESTIERE?.trim()
+            || att.properties_raw?.DES_MESTIERE?.trim()
+            || att.properties_raw?.des_mestiere?.trim();
         }
 
         // Ultimo fallback: usa il mestiere stesso
