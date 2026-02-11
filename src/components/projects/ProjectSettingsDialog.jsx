@@ -272,6 +272,13 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
       const fieldsLocali = localPopupFields !== null ? localPopupFields : (project?.config?.popup_fields || DEFAULT_POPUP_FIELDS);
       const fieldsAttivita = localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : (project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
 
+      console.log('📝 Salvataggio configurazione popup:', {
+        fieldsLocali,
+        fieldsAttivita,
+        localState: { localPopupFields, localPopupFieldsAttivita },
+        currentConfig: project.config
+      });
+
       const newConfig = {
         ...(project.config || {}),
         popup_fields: fieldsLocali,
@@ -286,7 +293,7 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
 
       setHasUnsavedChanges(false);
 
-      console.log('✅ Configurazione popup salvata', newConfig);
+      console.log('✅ Configurazione popup salvata con successo', newConfig);
       alert('Configurazione salvata con successo!');
     } catch (error) {
       console.error('❌ Errore salvataggio:', error);

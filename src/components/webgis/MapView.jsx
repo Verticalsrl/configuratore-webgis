@@ -253,9 +253,11 @@ export default function MapView({ project, locali, attivita = [], user }) {
       totale: visibleLocali.length,
       sfitti: visibleLocali.filter((l) => l.stato === 'sfitto').length,
       occupati: visibleLocali.filter((l) => l.stato === 'occupato').length,
-      altri: visibleLocali.filter((l) => l.stato === 'altri').length
+      altri: visibleLocali.filter((l) => l.stato === 'altri').length,
+      totaleAttivita: attivita.length,
+      attivitaFiltrate: filteredAttivita.length
     };
-  }, [visibleLocali]);
+  }, [visibleLocali, attivita.length, filteredAttivita.length]);
 
   const getFeatureStyle = (locale) => {
     const colors = {

@@ -55,6 +55,16 @@ export default function MapSidebar({
           <div className="text-xs text-amber-600 uppercase tracking-wide mb-1">Tasso</div>
           <div className="text-2xl font-bold text-amber-600">{tasso}%</div>
         </div>
+        {stats.totaleAttivita > 0 && (
+          <div className="bg-blue-50 rounded-xl p-3.5 border border-blue-200 col-span-2">
+            <div className="text-xs text-blue-600 uppercase tracking-wide mb-1">Attività Commerciali</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {stats.attivitaFiltrate} {stats.attivitaFiltrate !== stats.totaleAttivita && (
+                <span className="text-sm text-blue-500">/ {stats.totaleAttivita}</span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filters */}

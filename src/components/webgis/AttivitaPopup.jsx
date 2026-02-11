@@ -20,17 +20,31 @@ export default function AttivitaPopup({ attivita, onOpenStreetView, user, popupF
   const canEdit = !!user && !!onUpdateAttivita;
 
   const startEditing = () => {
-    setEditData({
+    // Include tutti i campi dell'attività, inclusi quelli da properties_raw
+    const allFields = {
       ragione_sociale: attivita.ragione_sociale || '',
       partita_iva: attivita.partita_iva || '',
+      codice_fiscale: attivita.codice_fiscale || '',
+      natura_giuridica: attivita.natura_giuridica || '',
+      pmi: attivita.pmi || '',
       mestiere: attivita.mestiere || '',
+      descrizione_mestiere: attivita.descrizione_mestiere || '',
       ateco2025: attivita.ateco2025 || '',
+      descrizione_ateco: attivita.descrizione_ateco || '',
       strada: attivita.strada || '',
       civico: attivita.civico || '',
+      frazione: attivita.frazione || '',
       comune: attivita.comune || '',
       cap: attivita.cap || '',
       provincia: attivita.provincia || '',
-    });
+      regione: attivita.regione || '',
+      prov_sede_legale: attivita.prov_sede_legale || '',
+      latitudine: attivita.latitudine || '',
+      longitudine: attivita.longitudine || '',
+      // Aggiungi eventuali campi custom da properties_raw
+      ...(attivita.properties_raw || {})
+    };
+    setEditData(allFields);
     setEditing(true);
   };
 
@@ -154,6 +168,24 @@ export default function AttivitaPopup({ attivita, onOpenStreetView, user, popupF
               className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-900"
             />
           </div>
+
+          {/* Campi aggiuntivi dal GeoJSON */}
+          {Object.keys(editData).filter(key =>
+            !['ragione_sociale', 'partita_iva', 'mestiere', 'ateco2025', 'strada', 'civico', 'comune', 'cap', 'provincia'].includes(key)
+          ).map(key => (
+            <div key={key}>
+              <label className="text-xs text-slate-500 block mb-1">
+                {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </label>
+              <input
+                type="text"
+                value={editData[key] || ''}
+                onChange={(e) => setEditData({ ...editData, [key]: e.target.value })}
+                className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-900"
+                placeholder={`Inserisci ${key}`}
+              />
+            </div>
+          ))}
 
           <div className="flex gap-2 pt-1">
             <button
