@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Eye, Pencil, Check, X, Loader2 } from 'lucide-react';
+import { Eye, Pencil, Check, X, Loader2, Trash2 } from 'lucide-react';
 
 const DEFAULT_POPUP_FIELDS = ['indirizzo', 'superficie', 'canone', 'conduttore', 'stato'];
 
-export default function LocalePopup({ locale, onOpenStreetView, user, popupFields, onUpdateLocale }) {
+export default function LocalePopup({ locale, onOpenStreetView, user, popupFields, onUpdateLocale, onDeleteLocale }) {
   if (!locale) return null;
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [editData, setEditData] = useState({});
 
   const fields = popupFields || DEFAULT_POPUP_FIELDS;
@@ -32,6 +33,18 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
       setEditing(false);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Sei sicuro di voler eliminare questo locale?\n\n${locale.indirizzo || 'Locale senza indirizzo'}`)) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await onDeleteLocale(locale.id);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -112,7 +125,7 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
   return (
     <div className="min-w-[260px]">
       {/* Action buttons */}
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-3 flex-wrap">
         {hasCoords && onOpenStreetView && (
           <button
             onClick={(e) => {
@@ -135,6 +148,19 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
           >
             <Pencil className="w-4 h-4" />
             Modifica
+          </button>
+        )}
+        {user && onDeleteLocale && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
+            disabled={deleting}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+          >
+            {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Elimina
           </button>
         )}
       </div>
