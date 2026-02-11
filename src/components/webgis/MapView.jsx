@@ -225,7 +225,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
       .map(([key, label]) => ({ key, label }))
       .sort((a, b) => a.label.localeCompare(b.label));
 
-    // Debug: mostra primi 3 mestieri
+    // Debug: mostra primi 3 mestieri e chiavi properties_raw
     if (result.length > 0) {
       console.log('🔍 Mestieri disponibili (primi 3):', result.slice(0, 3));
       const primaAttivita = attivita.find(a => a.mestiere);
@@ -233,7 +233,8 @@ export default function MapView({ project, locali, attivita = [], user }) {
         console.log('🔍 Campi prima attività:', {
           mestiere: primaAttivita.mestiere,
           descrizione_mestiere: primaAttivita.descrizione_mestiere,
-          DESC_MESTIERE_from_raw: primaAttivita.properties_raw?.DESC_MESTIERE
+          properties_raw_keys: primaAttivita.properties_raw ? Object.keys(primaAttivita.properties_raw) : 'N/A',
+          properties_raw_sample: primaAttivita.properties_raw
         });
       }
     }
