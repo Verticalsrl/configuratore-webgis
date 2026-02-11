@@ -60,14 +60,29 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
 
+  // Stato locale per popup fields con aggiornamento immediato
+  const [localPopupFields, setLocalPopupFields] = useState(null);
+  const [localPopupFieldsAttivita, setLocalPopupFieldsAttivita] = useState(null);
+
   const { data: locali = [] } = useQuery({
     queryKey: ['locali', project?.id],
     queryFn: () => base44.entities.Locale.filter({ project_id: project.id }),
     enabled: !!project?.id && open
   });
 
-  const popupFields = project?.config?.popup_fields || DEFAULT_POPUP_FIELDS;
-  const popupFieldsAttivita = project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA;
+  // Usa stato locale se disponibile, altrimenti usa il valore del progetto
+  const popupFields = localPopupFields !== null
+    ? localPopupFields
+    : (project?.config?.popup_fields || DEFAULT_POPUP_FIELDS);
+  const popupFieldsAttivita = localPopupFieldsAttivita !== null
+    ? localPopupFieldsAttivita
+    : (project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
+
+  // Reset stato locale quando cambia progetto
+  React.useEffect(() => {
+    setLocalPopupFields(null);
+    setLocalPopupFieldsAttivita(null);
+  }, [project?.id]);
 
   const handleExport = () => {
     const geojson = {
@@ -154,6 +169,10 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
       currentFields.push(field);
     }
 
+    // Aggiorna stato locale immediatamente per feedback visivo
+    setLocalPopupFields(currentFields);
+
+    // Poi aggiorna il database
     const newConfig = { ...(project.config || {}), popup_fields: currentFields };
     await base44.entities.Progetto.update(project.id, { config: newConfig });
     queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -169,6 +188,10 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
       currentFields.push(field);
     }
 
+    // Aggiorna stato locale immediatamente per feedback visivo
+    setLocalPopupFieldsAttivita(currentFields);
+
+    // Poi aggiorna il database
     const newConfig = { ...(project.config || {}), popup_fields_attivita: currentFields };
     await base44.entities.Progetto.update(project.id, { config: newConfig });
     queryClient.invalidateQueries({ queryKey: ['projects'] });
