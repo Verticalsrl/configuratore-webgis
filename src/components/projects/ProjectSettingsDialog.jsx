@@ -86,6 +86,18 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
     enabled: !!project?.id && open
   });
 
+  const { data: attivita = [] } = useQuery({
+    queryKey: ['attivita', project?.id],
+    queryFn: async () => {
+      try {
+        return await base44.entities.AttivitaCommerciale.filter({ project_id: project.id });
+      } catch (error) {
+        return [];
+      }
+    },
+    enabled: !!project?.id && open
+  });
+
   // Usa stato locale se disponibile, altrimenti usa il valore del progetto
   const popupFields = localPopupFields !== null
     ? localPopupFields
@@ -132,6 +144,44 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
     URL.revokeObjectURL(url);
   };
 
+  const handleExportAttivita = () => {
+    const geojson = {
+      type: 'FeatureCollection',
+      features: attivita.map((a) => ({
+        type: 'Feature',
+        geometry: a.geometry || {
+          type: 'Point',
+          coordinates: a.coordinates || [0, 0]
+        },
+        properties: {
+          ragione_sociale: a.ragione_sociale,
+          partita_iva: a.partita_iva,
+          codice_fiscale: a.codice_fiscale,
+          mestiere: a.mestiere,
+          descrizione_mestiere: a.descrizione_mestiere,
+          ateco2025: a.ateco2025,
+          descrizione_ateco: a.descrizione_ateco,
+          strada: a.strada,
+          civico: a.civico,
+          comune: a.comune,
+          cap: a.cap,
+          provincia: a.provincia,
+          regione: a.regione,
+          frazione: a.frazione,
+          ...a.properties_raw
+        }
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${project?.nome || 'progetto'}_attivita_export.geojson`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleClearProject = async () => {
     if (!confirm('Sei sicuro di voler svuotare tutti i locali di questo progetto?')) return;
 
@@ -144,6 +194,19 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
     });
     queryClient.invalidateQueries({ queryKey: ['locali', project.id] });
     queryClient.invalidateQueries({ queryKey: ['projects'] });
+  };
+
+  const handleClearAttivita = async () => {
+    if (!confirm('Sei sicuro di voler eliminare tutte le attività commerciali di questo progetto?')) return;
+
+    try {
+      await Promise.all(attivita.map((a) => base44.entities.AttivitaCommerciale.delete(a.id)));
+      queryClient.invalidateQueries({ queryKey: ['attivita', project.id] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      alert('Attività commerciali eliminate con successo');
+    } catch (error) {
+      alert(`Errore nell'eliminazione: ${error.message}`);
+    }
   };
 
   const handleImportSuccess = () => {
@@ -343,6 +406,15 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
               <div className="pt-4 border-t border-gray-200 space-y-2">
                 <h4 className="text-sm font-medium text-gray-900">Attività Commerciali</h4>
                 <Button
+                  onClick={handleExportAttivita}
+                  variant="outline"
+                  className="w-full border-gray-300 hover:bg-gray-50 text-gray-900 justify-start"
+                  disabled={attivita.length === 0}
+                >
+                  <Download className="w-5 h-5 mr-3" />
+                  Esporta GeoJSON Attività
+                </Button>
+                <Button
                   onClick={() => setShowImportAttivitaModal(true)}
                   variant="outline"
                   className="w-full border-gray-300 hover:bg-gray-50 text-gray-900 justify-start"
@@ -352,7 +424,7 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
                 </Button>
               </div>
 
-              <div className="pt-4 mt-4 border-t border-gray-200">
+              <div className="pt-4 mt-4 border-t border-gray-200 space-y-2">
                 <p className="text-xs text-gray-500 mb-3">
                   Queste azioni sono irreversibili. Procedi con cautela.
                 </p>
@@ -360,9 +432,19 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
                   onClick={handleClearProject}
                   variant="destructive"
                   className="w-full justify-start"
+                  disabled={locali.length === 0}
                 >
                   <Trash2 className="w-5 h-5 mr-3" />
-                  Svuota Progetto
+                  Svuota Locali Commerciali
+                </Button>
+                <Button
+                  onClick={handleClearAttivita}
+                  variant="destructive"
+                  className="w-full justify-start"
+                  disabled={attivita.length === 0}
+                >
+                  <Trash2 className="w-5 h-5 mr-3" />
+                  Svuota Attività Commerciali
                 </Button>
               </div>
             </TabsContent>

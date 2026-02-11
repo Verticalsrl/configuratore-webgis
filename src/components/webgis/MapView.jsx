@@ -153,6 +153,34 @@ export default function MapView({ project, locali, attivita = [], user }) {
     }
   }, [project?.id, queryClient]);
 
+  const handleDeleteLocale = useCallback(async (localeId) => {
+    try {
+      await base44.entities.Locale.delete(localeId);
+      setSelectedLocale(null); // Chiudi il popup
+      queryClient.invalidateQueries({ queryKey: ['locali', project?.id] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      alert('Locale eliminato con successo');
+    } catch (error) {
+      console.error('Errore eliminazione locale:', error);
+      alert(`Errore nell'eliminazione: ${error.message}`);
+      throw error;
+    }
+  }, [project?.id, queryClient]);
+
+  const handleDeleteAttivita = useCallback(async (attivitaId) => {
+    try {
+      await base44.entities.AttivitaCommerciale.delete(attivitaId);
+      // Il popup si chiude automaticamente quando il marker viene rimosso
+      await queryClient.invalidateQueries({ queryKey: ['attivita', project?.id] });
+      await queryClient.refetchQueries({ queryKey: ['attivita', project?.id] });
+      alert('Attività eliminata con successo');
+    } catch (error) {
+      console.error('Errore eliminazione attività:', error);
+      alert(`Errore nell'eliminazione: ${error.message}`);
+      throw error;
+    }
+  }, [project?.id, queryClient]);
+
   // Calcola lista mestieri unici dalle attività
   // Usa descrizione_mestiere se disponibile, altrimenti mestiere
   const metieriDisponibili = useMemo(() => {
@@ -320,6 +348,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
                         user={user}
                         popupFields={popupFields}
                         onUpdateLocale={user ? handleUpdateLocale : undefined}
+                        onDeleteLocale={user ? handleDeleteLocale : undefined}
                       />
                     </Popup>
                   </Marker>
@@ -340,6 +369,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
                         user={user}
                         popupFields={popupFields}
                         onUpdateLocale={user ? handleUpdateLocale : undefined}
+                        onDeleteLocale={user ? handleDeleteLocale : undefined}
                       />
                     </Popup>
                   </GeoJSON>
@@ -367,6 +397,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
                       user={user}
                       popupFields={popupFieldsAttivita}
                       onUpdateAttivita={user ? handleUpdateAttivita : undefined}
+                      onDeleteAttivita={user ? handleDeleteAttivita : undefined}
                     />
                   </Popup>
                 </Marker>

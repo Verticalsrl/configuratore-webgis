@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Eye, Pencil, Check, X, Loader2 } from 'lucide-react';
+import { Eye, Pencil, Check, X, Loader2, Trash2 } from 'lucide-react';
 
 const DEFAULT_POPUP_FIELDS = [
   'ragione_sociale', 'mestiere', 'ateco2025', 'indirizzo',
   'comune', 'partita_iva', 'codice_fiscale'
 ];
 
-export default function AttivitaPopup({ attivita, onOpenStreetView, user, popupFields, onUpdateAttivita }) {
+export default function AttivitaPopup({ attivita, onOpenStreetView, user, popupFields, onUpdateAttivita, onDeleteAttivita }) {
   if (!attivita) return null;
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [editData, setEditData] = useState({});
 
   const fields = popupFields || DEFAULT_POPUP_FIELDS;
@@ -40,6 +41,18 @@ export default function AttivitaPopup({ attivita, onOpenStreetView, user, popupF
       setEditing(false);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Sei sicuro di voler eliminare questa attività commerciale?\n\n${attivita.ragione_sociale || 'Attività senza ragione sociale'}`)) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await onDeleteAttivita(attivita.id);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -168,7 +181,7 @@ export default function AttivitaPopup({ attivita, onOpenStreetView, user, popupF
   return (
     <div className="min-w-[280px]">
       {/* Action buttons */}
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-3 flex-wrap">
         {hasCoords && onOpenStreetView && (
           <button
             onClick={(e) => {
@@ -191,6 +204,19 @@ export default function AttivitaPopup({ attivita, onOpenStreetView, user, popupF
           >
             <Pencil className="w-4 h-4" />
             Modifica
+          </button>
+        )}
+        {user && onDeleteAttivita && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
+            disabled={deleting}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+          >
+            {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Elimina
           </button>
         )}
       </div>
