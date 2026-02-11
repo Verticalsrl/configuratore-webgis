@@ -130,6 +130,10 @@ export default function MapView({ project, locali, attivita = [], user }) {
   });
 
   const popupFields = project?.config?.popup_fields || ['indirizzo', 'superficie', 'canone', 'conduttore', 'stato'];
+  const popupFieldsAttivita = project?.config?.popup_fields_attivita || [
+    'ragione_sociale', 'mestiere', 'ateco2025', 'indirizzo',
+    'comune', 'partita_iva', 'codice_fiscale'
+  ];
 
   const handleUpdateLocale = useCallback(async (localeId, data) => {
     await base44.entities.Locale.update(localeId, data);
@@ -329,6 +333,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
                       attivita={att}
                       onOpenStreetView={setSelectedLocale}
                       user={user}
+                      popupFields={popupFieldsAttivita}
                       onUpdateAttivita={user ? handleUpdateAttivita : undefined}
                     />
                   </Popup>
