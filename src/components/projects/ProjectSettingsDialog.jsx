@@ -123,16 +123,23 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
   // Reset stato locale quando cambia progetto o si apre il dialog
   React.useEffect(() => {
     if (open) {
-      console.log('🔧 Apertura dialog impostazioni:', {
+      const debugInfo = {
         projectId: project?.id,
         rawConfigType: typeof project?.config,
         rawConfig: project?.config,
         parsedConfig,
-        popup_fields: parsedConfig?.popup_fields,
         popup_fields_attivita: parsedConfig?.popup_fields_attivita,
-        willUseFields: localPopupFields !== null ? localPopupFields : (parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS),
-        willUseFieldsAttivita: localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : (parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA)
-      });
+      };
+
+      console.log('🔧 Apertura dialog impostazioni:', debugInfo);
+
+      // Alert di debug per vedere cosa viene caricato
+      if (parsedConfig?.popup_fields_attivita) {
+        console.log('✅ Campi attività trovati:', parsedConfig.popup_fields_attivita.join(', '));
+      } else {
+        console.log('⚠️ Nessun campo attività trovato, uso default');
+      }
+
       setLocalPopupFields(null);
       setLocalPopupFieldsAttivita(null);
       setHasUnsavedChanges(false);
@@ -346,7 +353,10 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
       setHasUnsavedChanges(false);
 
       console.log('✅ Configurazione popup salvata con successo', newConfig);
-      alert('Configurazione salvata con successo!');
+
+      // Alert di debug con info sui campi salvati
+      const campiAttivitaSalvati = fieldsAttivita.join(', ');
+      alert(`✅ Configurazione salvata!\n\n📋 Campi attività (${fieldsAttivita.length}):\n${campiAttivitaSalvati}`);
     } catch (error) {
       console.error('❌ Errore salvataggio:', error);
       alert(`Errore nel salvataggio: ${error.message}`);
