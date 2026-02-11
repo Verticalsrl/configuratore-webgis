@@ -52,13 +52,28 @@ const POPUP_FIELD_LABELS_ATTIVITA = {
   longitudine: 'Longitudine'
 };
 
-export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
+export default function ProjectSettingsDialog({ open, onOpenChange, project: projectProp }) {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showImportAttivitaModal, setShowImportAttivitaModal] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
+
+  // Fetch progetto direttamente per avere sempre dati aggiornati
+  const { data: freshProject } = useQuery({
+    queryKey: ['project-settings', projectProp?.id],
+    queryFn: async () => {
+      const projects = await base44.entities.Progetto.filter({ id: projectProp.id });
+      return projects[0];
+    },
+    enabled: !!projectProp?.id && open,
+    staleTime: 0,
+    cacheTime: 0,
+  });
+
+  // Usa il progetto fresco se disponibile, altrimenti quello passato come prop
+  const project = freshProject || projectProp;
 
   // Stato locale per popup fields (solo UI, non auto-save)
   const [localPopupFields, setLocalPopupFields] = useState(null);
@@ -118,7 +133,7 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
       setLocalPopupFieldsAttivita(null);
       setHasUnsavedChanges(false);
     }
-  }, [project?.id, open, parsedConfig]);
+  }, [projectProp?.id, open, parsedConfig]);
 
   const handleExport = () => {
     const geojson = {
@@ -308,10 +323,14 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
 
       await base44.entities.Progetto.update(project.id, { config: newConfig });
 
-      // Aspetta che i refetch siano completati prima di resettare lo stato locale
+      // Invalida e refetch tutte le query correlate
+      await queryClient.refetchQueries({ queryKey: ['project-settings', project.id] });
       await queryClient.refetchQueries({ queryKey: ['projects'] });
       await queryClient.refetchQueries({ queryKey: ['project', project.id] });
 
+      // Resetta stato locale ora che il progetto fresco ha i dati aggiornati
+      setLocalPopupFields(null);
+      setLocalPopupFieldsAttivita(null);
       setHasUnsavedChanges(false);
 
       console.log('✅ Configurazione popup salvata con successo', newConfig);
