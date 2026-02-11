@@ -74,7 +74,7 @@ export default function ImportAttivitaModal({ open, onOpenChange, project, onSuc
           if (upperField === 'NATURA_GIURIDICA') autoConfig.campo_natura_giuridica = field;
           if (upperField === 'PMI') autoConfig.campo_pmi = field;
           if (upperField === 'MESTIERE') autoConfig.campo_mestiere = field;
-          if (upperField === 'DESCRIZIONE_MESTIERE' || upperField === 'DESC_MESTIERE') autoConfig.campo_descrizione_mestiere = field;
+          if (upperField === 'DESCRIZIONE_MESTIERE' || upperField === 'DESC_MESTIERE' || upperField === 'DES_MESTIERE') autoConfig.campo_descrizione_mestiere = field;
           if (upperField === 'ATECO2025' || upperField === 'ATECO') autoConfig.campo_ateco = field;
           if (upperField === 'DESCRIZIONE' || upperField === 'DESCRIZIONE_ATECO' || upperField === 'DESC_ATECO') autoConfig.campo_descrizione_ateco = field;
         });
