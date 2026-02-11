@@ -6,12 +6,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
-export default function MapSidebar({ 
-  project, 
-  stats, 
-  filters, 
+export default function MapSidebar({
+  project,
+  stats,
+  filters,
   onFilterChange,
-  user
+  user,
+  metieriDisponibili = []
 }) {
   const tasso = stats.totale > 0 
     ? ((stats.sfitti / stats.totale) * 100).toFixed(1) 
@@ -111,6 +112,61 @@ export default function MapSidebar({
               </div>
             </div>
           </div>
+
+          {/* Filtro Mestieri */}
+          {filters.showAttivita && metieriDisponibili.length > 0 && (
+            <div>
+              <label className="text-xs text-gray-600 block mb-2">Filtra per Mestiere</label>
+              <div className="bg-slate-800 rounded-lg p-3 max-h-64 overflow-y-auto">
+                {/* Pulsante "Tutti i mestieri" */}
+                <button
+                  onClick={() => onFilterChange({ ...filters, metieriSelezionati: [] })}
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm mb-2 transition-colors ${
+                    filters.metieriSelezionati.length === 0
+                      ? 'bg-blue-600 text-white font-medium'
+                      : 'text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  📋 Tutti i mestieri
+                </button>
+
+                {/* Lista mestieri */}
+                <div className="space-y-1">
+                  {metieriDisponibili.map((mestiere) => {
+                    const isSelected = filters.metieriSelezionati.includes(mestiere);
+                    return (
+                      <button
+                        key={mestiere}
+                        onClick={() => {
+                          const nuoviMestieri = isSelected
+                            ? filters.metieriSelezionati.filter(m => m !== mestiere)
+                            : [...filters.metieriSelezionati, mestiere];
+                          onFilterChange({ ...filters, metieriSelezionati: nuoviMestieri });
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                          isSelected
+                            ? 'bg-blue-600 text-white font-medium'
+                            : 'text-slate-300 hover:bg-slate-700'
+                        }`}
+                      >
+                        🔹 {mestiere}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Pulsante Reset */}
+                {filters.metieriSelezionati.length > 0 && (
+                  <button
+                    onClick={() => onFilterChange({ ...filters, metieriSelezionati: [] })}
+                    className="w-full mt-3 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors"
+                  >
+                    🔄 Reset Filtri
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Search */}
           <div>

@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import MapSidebar from './MapSidebar';
 import MapLegend from './MapLegend';
 import LocalePopup from './LocalePopup';
+import AttivitaPopup from './AttivitaPopup';
 import StreetViewPanel from './StreetViewPanel';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -120,6 +121,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
     showOccupati: true,
     showAltri: true,
     showAttivita: true,
+    metieriSelezionati: [], // Array di mestieri selezionati, vuoto = tutti
     search: '',
     minSuperficie: '',
     maxSuperficie: '',
@@ -133,6 +135,31 @@ export default function MapView({ project, locali, attivita = [], user }) {
     await base44.entities.Locale.update(localeId, data);
     queryClient.invalidateQueries({ queryKey: ['locali', project?.id] });
   }, [project?.id, queryClient]);
+
+  const handleUpdateAttivita = useCallback(async (attivitaId, data) => {
+    await base44.entities.AttivitaCommerciale.update(attivitaId, data);
+    queryClient.invalidateQueries({ queryKey: ['attivita', project?.id] });
+  }, [project?.id, queryClient]);
+
+  // Calcola lista mestieri unici dalle attività
+  const metieriDisponibili = useMemo(() => {
+    const mestieri = new Set();
+    attivita.forEach(att => {
+      if (att.mestiere && att.mestiere.trim() !== '') {
+        mestieri.add(att.mestiere.trim());
+      }
+    });
+    return Array.from(mestieri).sort();
+  }, [attivita]);
+
+  // Filtra attività per mestiere
+  const filteredAttivita = useMemo(() => {
+    if (!filters.showAttivita) return [];
+    if (filters.metieriSelezionati.length === 0) return attivita;
+    return attivita.filter(att =>
+      filters.metieriSelezionati.includes(att.mestiere)
+    );
+  }, [attivita, filters.showAttivita, filters.metieriSelezionati]);
 
   const filteredLocali = useMemo(() => {
     return locali.filter((l) => {
@@ -198,6 +225,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
         filters={filters}
         onFilterChange={setFilters}
         user={user}
+        metieriDisponibili={metieriDisponibili}
       />
 
       <div className="flex-1 relative flex">
@@ -286,7 +314,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
             })}
 
             {/* Render Attività Commerciali */}
-            {filters.showAttivita && attivita.map((att, index) => {
+            {filteredAttivita.map((att, index) => {
               if (!att.coordinates) return null;
 
               const coords = att.coordinates;
@@ -297,28 +325,12 @@ export default function MapView({ project, locali, attivita = [], user }) {
                   icon={attivitaIcon}
                 >
                   <Popup>
-                    <div className="text-sm">
-                      <h3 className="font-bold text-base mb-2">
-                        {att.ragione_sociale || 'Attività Commerciale'}
-                      </h3>
-                      <div className="space-y-1">
-                        {att.mestiere && (
-                          <div><strong>Mestiere:</strong> {att.mestiere}</div>
-                        )}
-                        {att.ateco2025 && (
-                          <div><strong>ATECO:</strong> {att.ateco2025}</div>
-                        )}
-                        {att.strada && (
-                          <div><strong>Indirizzo:</strong> {att.strada} {att.civico}</div>
-                        )}
-                        {att.comune && (
-                          <div><strong>Comune:</strong> {att.comune}</div>
-                        )}
-                        {att.partita_iva && (
-                          <div><strong>P.IVA:</strong> {att.partita_iva}</div>
-                        )}
-                      </div>
-                    </div>
+                    <AttivitaPopup
+                      attivita={att}
+                      onOpenStreetView={setSelectedLocale}
+                      user={user}
+                      onUpdateAttivita={user ? handleUpdateAttivita : undefined}
+                    />
                   </Popup>
                 </Marker>
               );
