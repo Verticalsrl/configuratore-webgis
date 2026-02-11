@@ -124,10 +124,14 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
   React.useEffect(() => {
     if (open) {
       console.log('🔧 Apertura dialog impostazioni:', {
+        projectId: project?.id,
+        rawConfigType: typeof project?.config,
         rawConfig: project?.config,
         parsedConfig,
         popup_fields: parsedConfig?.popup_fields,
-        popup_fields_attivita: parsedConfig?.popup_fields_attivita
+        popup_fields_attivita: parsedConfig?.popup_fields_attivita,
+        willUseFields: localPopupFields !== null ? localPopupFields : (parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS),
+        willUseFieldsAttivita: localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : (parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA)
       });
       setLocalPopupFields(null);
       setLocalPopupFieldsAttivita(null);
@@ -312,7 +316,8 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
         fieldsAttivita,
         localState: { localPopupFields, localPopupFieldsAttivita },
         parsedConfig,
-        rawConfig: project.config
+        rawConfig: project.config,
+        configType: typeof project.config
       });
 
       const newConfig = {
@@ -321,12 +326,19 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
         popup_fields_attivita: fieldsAttivita
       };
 
+      console.log('📦 Tipo config da salvare:', typeof newConfig, newConfig);
+
+      // Salva config come oggetto (Base44 gestirà la serializzazione)
       await base44.entities.Progetto.update(project.id, { config: newConfig });
+
+      console.log('💾 Config salvato, inizio refetch...');
 
       // Invalida e refetch tutte le query correlate
       await queryClient.refetchQueries({ queryKey: ['project-settings', project.id] });
       await queryClient.refetchQueries({ queryKey: ['projects'] });
       await queryClient.refetchQueries({ queryKey: ['project', project.id] });
+
+      console.log('🔄 Refetch completati');
 
       // Resetta stato locale ora che il progetto fresco ha i dati aggiornati
       setLocalPopupFields(null);
