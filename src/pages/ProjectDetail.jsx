@@ -19,7 +19,9 @@ export default function ProjectDetail() {
       const projects = await base44.entities.Progetto.filter({ id: projectId });
       return projects[0];
     },
-    enabled: !!projectId
+    enabled: !!projectId,
+    staleTime: 0, // Considera sempre i dati stale per refetch immediato
+    gcTime: 0 // Non cachare i dati dopo unmount
   });
 
   const { data: locali = [], isLoading: localiLoading } = useQuery({
