@@ -173,10 +173,19 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
     setLocalPopupFields(currentFields);
 
     // Poi aggiorna il database
-    const newConfig = { ...(project.config || {}), popup_fields: currentFields };
-    await base44.entities.Progetto.update(project.id, { config: newConfig });
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-    queryClient.invalidateQueries({ queryKey: ['project', project.id] });
+    try {
+      const newConfig = { ...(project.config || {}), popup_fields: currentFields };
+      await base44.entities.Progetto.update(project.id, { config: newConfig });
+      // Forza refetch immediato
+      await queryClient.refetchQueries({ queryKey: ['projects'] });
+      await queryClient.refetchQueries({ queryKey: ['project', project.id] });
+      console.log('✅ Popup fields locali salvati:', currentFields);
+    } catch (error) {
+      console.error('❌ Errore salvataggio popup fields locali:', error);
+      alert(`Errore nel salvataggio: ${error.message}`);
+      // Ripristina stato locale in caso di errore
+      setLocalPopupFields(null);
+    }
   };
 
   const handleTogglePopupFieldAttivita = async (field) => {
@@ -192,10 +201,19 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
     setLocalPopupFieldsAttivita(currentFields);
 
     // Poi aggiorna il database
-    const newConfig = { ...(project.config || {}), popup_fields_attivita: currentFields };
-    await base44.entities.Progetto.update(project.id, { config: newConfig });
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-    queryClient.invalidateQueries({ queryKey: ['project', project.id] });
+    try {
+      const newConfig = { ...(project.config || {}), popup_fields_attivita: currentFields };
+      await base44.entities.Progetto.update(project.id, { config: newConfig });
+      // Forza refetch immediato
+      await queryClient.refetchQueries({ queryKey: ['projects'] });
+      await queryClient.refetchQueries({ queryKey: ['project', project.id] });
+      console.log('✅ Popup fields attività salvati:', currentFields);
+    } catch (error) {
+      console.error('❌ Errore salvataggio popup fields attività:', error);
+      alert(`Errore nel salvataggio: ${error.message}`);
+      // Ripristina stato locale in caso di errore
+      setLocalPopupFieldsAttivita(null);
+    }
   };
 
   if (!project) return null;

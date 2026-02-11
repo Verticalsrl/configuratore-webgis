@@ -141,8 +141,16 @@ export default function MapView({ project, locali, attivita = [], user }) {
   }, [project?.id, queryClient]);
 
   const handleUpdateAttivita = useCallback(async (attivitaId, data) => {
-    await base44.entities.AttivitaCommerciale.update(attivitaId, data);
-    queryClient.invalidateQueries({ queryKey: ['attivita', project?.id] });
+    try {
+      await base44.entities.AttivitaCommerciale.update(attivitaId, data);
+      // Invalida e forza refetch immediato
+      await queryClient.invalidateQueries({ queryKey: ['attivita', project?.id] });
+      await queryClient.refetchQueries({ queryKey: ['attivita', project?.id] });
+    } catch (error) {
+      console.error('Errore aggiornamento attività:', error);
+      alert(`Errore nel salvataggio: ${error.message}`);
+      throw error; // Rilancia per gestione in AttivitaPopup
+    }
   }, [project?.id, queryClient]);
 
   // Calcola lista mestieri unici dalle attività

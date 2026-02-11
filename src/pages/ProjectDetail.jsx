@@ -41,7 +41,9 @@ export default function ProjectDetail() {
         return [];
       }
     },
-    enabled: !!projectId
+    enabled: !!projectId,
+    staleTime: 0, // Forza refetch immediato quando modificate
+    gcTime: 0 // Non cachare dopo unmount
   });
 
   if (projectLoading || localiLoading || attivitaLoading) {
