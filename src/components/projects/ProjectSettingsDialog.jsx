@@ -26,6 +26,32 @@ const POPUP_FIELD_LABELS = {
   stato: 'Stato',
 };
 
+const DEFAULT_POPUP_FIELDS_ATTIVITA = [
+  'ragione_sociale', 'mestiere', 'ateco2025', 'indirizzo',
+  'comune', 'partita_iva', 'codice_fiscale'
+];
+
+const POPUP_FIELD_LABELS_ATTIVITA = {
+  ragione_sociale: 'Ragione Sociale',
+  mestiere: 'Mestiere',
+  ateco2025: 'Codice ATECO',
+  descrizione_mestiere: 'Descrizione Mestiere',
+  descrizione_ateco: 'Descrizione ATECO',
+  indirizzo: 'Indirizzo (Strada + Civico)',
+  comune: 'Comune',
+  cap: 'CAP',
+  provincia: 'Provincia',
+  regione: 'Regione',
+  frazione: 'Frazione',
+  prov_sede_legale: 'Provincia Sede Legale',
+  partita_iva: 'Partita IVA',
+  codice_fiscale: 'Codice Fiscale',
+  natura_giuridica: 'Natura Giuridica',
+  pmi: 'PMI',
+  latitudine: 'Latitudine',
+  longitudine: 'Longitudine'
+};
+
 export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showImportAttivitaModal, setShowImportAttivitaModal] = useState(false);
@@ -41,6 +67,7 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
   });
 
   const popupFields = project?.config?.popup_fields || DEFAULT_POPUP_FIELDS;
+  const popupFieldsAttivita = project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA;
 
   const handleExport = () => {
     const geojson = {
@@ -128,6 +155,21 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
     }
 
     const newConfig = { ...(project.config || {}), popup_fields: currentFields };
+    await base44.entities.Progetto.update(project.id, { config: newConfig });
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    queryClient.invalidateQueries({ queryKey: ['project', project.id] });
+  };
+
+  const handleTogglePopupFieldAttivita = async (field) => {
+    const currentFields = [...popupFieldsAttivita];
+    const idx = currentFields.indexOf(field);
+    if (idx >= 0) {
+      currentFields.splice(idx, 1);
+    } else {
+      currentFields.push(field);
+    }
+
+    const newConfig = { ...(project.config || {}), popup_fields_attivita: currentFields };
     await base44.entities.Progetto.update(project.id, { config: newConfig });
     queryClient.invalidateQueries({ queryKey: ['projects'] });
     queryClient.invalidateQueries({ queryKey: ['project', project.id] });
@@ -244,26 +286,55 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
             </TabsContent>
 
             {/* Popup Config Tab */}
-            <TabsContent value="popup" className="space-y-4 mt-4">
-              <p className="text-sm text-gray-500">
-                Seleziona i campi da mostrare nel popup sulla mappa.
-              </p>
-              <div className="space-y-3">
-                {Object.entries(POPUP_FIELD_LABELS).map(([field, label]) => (
-                  <div key={field} className="flex items-center gap-3">
-                    <Checkbox
-                      id={`popup-field-${field}`}
-                      checked={popupFields.includes(field)}
-                      onCheckedChange={() => handleTogglePopupField(field)}
-                    />
-                    <label
-                      htmlFor={`popup-field-${field}`}
-                      className="text-sm text-gray-900 cursor-pointer"
-                    >
-                      {label}
-                    </label>
-                  </div>
-                ))}
+            <TabsContent value="popup" className="space-y-6 mt-4">
+              {/* Locali Commerciali */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Locali Commerciali</h4>
+                <p className="text-sm text-gray-500 mb-3">
+                  Seleziona i campi da mostrare nel popup dei locali sulla mappa.
+                </p>
+                <div className="space-y-2">
+                  {Object.entries(POPUP_FIELD_LABELS).map(([field, label]) => (
+                    <div key={field} className="flex items-center gap-3">
+                      <Checkbox
+                        id={`popup-field-${field}`}
+                        checked={popupFields.includes(field)}
+                        onCheckedChange={() => handleTogglePopupField(field)}
+                      />
+                      <label
+                        htmlFor={`popup-field-${field}`}
+                        className="text-sm text-gray-900 cursor-pointer"
+                      >
+                        {label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Attività Commerciali */}
+              <div className="pt-4 border-t border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Attività Commerciali</h4>
+                <p className="text-sm text-gray-500 mb-3">
+                  Seleziona i campi da mostrare nel popup delle attività sulla mappa.
+                </p>
+                <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-2">
+                  {Object.entries(POPUP_FIELD_LABELS_ATTIVITA).map(([field, label]) => (
+                    <div key={field} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`popup-attivita-field-${field}`}
+                        checked={popupFieldsAttivita.includes(field)}
+                        onCheckedChange={() => handleTogglePopupFieldAttivita(field)}
+                      />
+                      <label
+                        htmlFor={`popup-attivita-field-${field}`}
+                        className="text-sm text-gray-900 cursor-pointer"
+                      >
+                        {label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
             </TabsContent>
           </Tabs>
