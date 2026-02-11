@@ -202,9 +202,17 @@ export default function MapView({ project, locali, attivita = [], user }) {
     attivita.forEach(att => {
       const metiereKey = att.mestiere?.trim();
       if (metiereKey && metiereKey !== '') {
-        // Usa descrizione se disponibile, altrimenti usa il mestiere stesso
-        const descrizione = att.descrizione_mestiere?.trim();
+        // Cerca descrizione in più campi possibili
+        let descrizione = att.descrizione_mestiere?.trim();
+
+        // Fallback: cerca DESC_MESTIERE in properties_raw
+        if (!descrizione || descrizione === '') {
+          descrizione = att.properties_raw?.DESC_MESTIERE?.trim();
+        }
+
+        // Ultimo fallback: usa il mestiere stesso
         const label = descrizione && descrizione !== '' ? descrizione : metiereKey;
+
         if (!metieriMap.has(metiereKey)) {
           metieriMap.set(metiereKey, label);
         }
@@ -222,7 +230,8 @@ export default function MapView({ project, locali, attivita = [], user }) {
       if (primaAttivita) {
         console.log('🔍 Campi prima attività:', {
           mestiere: primaAttivita.mestiere,
-          descrizione_mestiere: primaAttivita.descrizione_mestiere
+          descrizione_mestiere: primaAttivita.descrizione_mestiere,
+          DESC_MESTIERE_from_raw: primaAttivita.properties_raw?.DESC_MESTIERE
         });
       }
     }
