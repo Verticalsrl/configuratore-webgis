@@ -347,9 +347,8 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
 
       console.log('🔄 Refetch completati');
 
-      // Resetta stato locale ora che il progetto fresco ha i dati aggiornati
-      setLocalPopupFields(null);
-      setLocalPopupFieldsAttivita(null);
+      // NON resettare lo stato locale! Lascia i valori salvati visibili
+      // Lo stato locale verrà resettato quando si chiude e riapre il dialog
       setHasUnsavedChanges(false);
 
       console.log('✅ Configurazione popup salvata con successo', newConfig);
