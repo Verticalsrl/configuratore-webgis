@@ -117,14 +117,14 @@ export default function MapSidebar({
           {filters.showAttivita && metieriDisponibili.length > 0 && (
             <div>
               <label className="text-xs text-gray-600 block mb-2">Filtra per Mestiere</label>
-              <div className="bg-slate-800 rounded-lg p-3 max-h-64 overflow-y-auto">
+              <div className="bg-white border border-gray-200 rounded-lg p-3 max-h-64 overflow-y-auto">
                 {/* Pulsante "Tutti i mestieri" */}
                 <button
                   onClick={() => onFilterChange({ ...filters, metieriSelezionati: [] })}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm mb-2 transition-colors ${
                     filters.metieriSelezionati.length === 0
                       ? 'bg-blue-600 text-white font-medium'
-                      : 'text-slate-300 hover:bg-slate-700'
+                      : 'text-gray-700 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
                   📋 Tutti i mestieri
@@ -133,23 +133,23 @@ export default function MapSidebar({
                 {/* Lista mestieri */}
                 <div className="space-y-1">
                   {metieriDisponibili.map((mestiere) => {
-                    const isSelected = filters.metieriSelezionati.includes(mestiere);
+                    const isSelected = filters.metieriSelezionati.includes(mestiere.key);
                     return (
                       <button
-                        key={mestiere}
+                        key={mestiere.key}
                         onClick={() => {
                           const nuoviMestieri = isSelected
-                            ? filters.metieriSelezionati.filter(m => m !== mestiere)
-                            : [...filters.metieriSelezionati, mestiere];
+                            ? filters.metieriSelezionati.filter(m => m !== mestiere.key)
+                            : [...filters.metieriSelezionati, mestiere.key];
                           onFilterChange({ ...filters, metieriSelezionati: nuoviMestieri });
                         }}
                         className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                           isSelected
                             ? 'bg-blue-600 text-white font-medium'
-                            : 'text-slate-300 hover:bg-slate-700'
+                            : 'text-gray-700 hover:bg-gray-100 border border-gray-200'
                         }`}
                       >
-                        🔹 {mestiere}
+                        🔹 {mestiere.label}
                       </button>
                     );
                   })}
