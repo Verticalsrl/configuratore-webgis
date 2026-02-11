@@ -216,6 +216,39 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
     }
   };
 
+  const handleSelectAllAttivita = async () => {
+    const allFields = Object.keys(POPUP_FIELD_LABELS_ATTIVITA);
+    setLocalPopupFieldsAttivita(allFields);
+
+    try {
+      const newConfig = { ...(project.config || {}), popup_fields_attivita: allFields };
+      await base44.entities.Progetto.update(project.id, { config: newConfig });
+      await queryClient.refetchQueries({ queryKey: ['projects'] });
+      await queryClient.refetchQueries({ queryKey: ['project', project.id] });
+      console.log('✅ Tutti i campi attività selezionati');
+    } catch (error) {
+      console.error('❌ Errore:', error);
+      alert(`Errore: ${error.message}`);
+      setLocalPopupFieldsAttivita(null);
+    }
+  };
+
+  const handleDeselectAllAttivita = async () => {
+    setLocalPopupFieldsAttivita([]);
+
+    try {
+      const newConfig = { ...(project.config || {}), popup_fields_attivita: [] };
+      await base44.entities.Progetto.update(project.id, { config: newConfig });
+      await queryClient.refetchQueries({ queryKey: ['projects'] });
+      await queryClient.refetchQueries({ queryKey: ['project', project.id] });
+      console.log('✅ Tutti i campi attività deselezionati');
+    } catch (error) {
+      console.error('❌ Errore:', error);
+      alert(`Errore: ${error.message}`);
+      setLocalPopupFieldsAttivita(null);
+    }
+  };
+
   if (!project) return null;
 
   return (
@@ -359,6 +392,27 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
                 <p className="text-sm text-gray-500 mb-3">
                   Seleziona i campi da mostrare nel popup delle attività sulla mappa.
                 </p>
+
+                {/* Pulsanti rapidi */}
+                <div className="flex gap-2 mb-3">
+                  <Button
+                    onClick={handleSelectAllAttivita}
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 border-green-300 text-green-700 hover:bg-green-50"
+                  >
+                    ✓ Seleziona tutti
+                  </Button>
+                  <Button
+                    onClick={handleDeselectAllAttivita}
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
+                  >
+                    ✗ Deseleziona tutti
+                  </Button>
+                </div>
+
                 <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-2">
                   {Object.entries(POPUP_FIELD_LABELS_ATTIVITA).map(([field, label]) => (
                     <div key={field} className="flex items-center gap-2">
