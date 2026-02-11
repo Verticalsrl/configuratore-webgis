@@ -232,14 +232,17 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
 
       await base44.entities.Progetto.update(project.id, { config: newConfig });
 
-      // Aspetta che i refetch siano completati prima di resettare lo stato locale
+      // Invalida e refetch tutte le query correlate
+      await queryClient.refetchQueries({ queryKey: ['project-settings', project.id] });
       await queryClient.refetchQueries({ queryKey: ['projects'] });
       await queryClient.refetchQueries({ queryKey: ['project', project.id] });
 
+      // Resetta stato locale ora che il progetto fresco ha i dati aggiornati
+      setLocalPopupFields(null);
+      setLocalPopupFieldsAttivita(null);
       setHasUnsavedChanges(false);
 
       console.log('✅ Configurazione popup salvata', newConfig);
-      alert('Configurazione salvata con successo!');
     } catch (error) {
       console.error('❌ Errore salvataggio:', error);
       alert(`Errore nel salvataggio: ${error.message}`);
