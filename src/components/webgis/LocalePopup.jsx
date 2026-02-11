@@ -17,12 +17,17 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
   const canEdit = !!user && !!onUpdateLocale;
 
   const startEditing = () => {
-    setEditData({
+    // Include tutti i campi del locale, inclusi quelli da properties_raw
+    const allFields = {
       stato: locale.stato || 'sfitto',
       canone: locale.canone || 0,
       conduttore: locale.conduttore || '',
       superficie: locale.superficie || 0,
-    });
+      indirizzo: locale.indirizzo || '',
+      // Aggiungi eventuali campi custom da properties_raw
+      ...(locale.properties_raw || {})
+    };
+    setEditData(allFields);
     setEditing(true);
   };
 
@@ -98,6 +103,24 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
               className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-900"
             />
           </div>
+
+          {/* Campi aggiuntivi dal GeoJSON */}
+          {Object.keys(editData).filter(key =>
+            !['stato', 'canone', 'conduttore', 'superficie', 'indirizzo'].includes(key)
+          ).map(key => (
+            <div key={key}>
+              <label className="text-xs text-slate-500 block mb-1">
+                {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </label>
+              <input
+                type="text"
+                value={editData[key] || ''}
+                onChange={(e) => setEditData({ ...editData, [key]: e.target.value })}
+                className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-900"
+                placeholder={`Inserisci ${key}`}
+              />
+            </div>
+          ))}
 
           <div className="flex gap-2 pt-1">
             <button

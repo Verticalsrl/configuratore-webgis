@@ -98,22 +98,42 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
     enabled: !!project?.id && open
   });
 
+  // Parse config se è una stringa JSON
+  const parsedConfig = React.useMemo(() => {
+    if (!project?.config) return {};
+    if (typeof project.config === 'string') {
+      try {
+        return JSON.parse(project.config);
+      } catch (e) {
+        console.error('Errore parsing config:', e);
+        return {};
+      }
+    }
+    return project.config;
+  }, [project?.config]);
+
   // Usa stato locale se disponibile, altrimenti usa il valore del progetto
   const popupFields = localPopupFields !== null
     ? localPopupFields
-    : (project?.config?.popup_fields || DEFAULT_POPUP_FIELDS);
+    : (parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS);
   const popupFieldsAttivita = localPopupFieldsAttivita !== null
     ? localPopupFieldsAttivita
-    : (project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
+    : (parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
 
   // Reset stato locale quando cambia progetto o si apre il dialog
   React.useEffect(() => {
     if (open) {
+      console.log('🔧 Apertura dialog impostazioni:', {
+        rawConfig: project?.config,
+        parsedConfig,
+        popup_fields: parsedConfig?.popup_fields,
+        popup_fields_attivita: parsedConfig?.popup_fields_attivita
+      });
       setLocalPopupFields(null);
       setLocalPopupFieldsAttivita(null);
       setHasUnsavedChanges(false);
     }
-  }, [projectProp?.id, open]);
+  }, [projectProp?.id, open, parsedConfig]);
 
   const handleExport = () => {
     const geojson = {
@@ -284,11 +304,19 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
   const handleSavePopupConfig = async () => {
     setSaving(true);
     try {
-      const fieldsLocali = localPopupFields !== null ? localPopupFields : (project?.config?.popup_fields || DEFAULT_POPUP_FIELDS);
-      const fieldsAttivita = localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : (project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
+      const fieldsLocali = localPopupFields !== null ? localPopupFields : (parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS);
+      const fieldsAttivita = localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : (parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
+
+      console.log('📝 Salvataggio configurazione popup:', {
+        fieldsLocali,
+        fieldsAttivita,
+        localState: { localPopupFields, localPopupFieldsAttivita },
+        parsedConfig,
+        rawConfig: project.config
+      });
 
       const newConfig = {
-        ...(project.config || {}),
+        ...parsedConfig,
         popup_fields: fieldsLocali,
         popup_fields_attivita: fieldsAttivita
       };
@@ -305,7 +333,8 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
       setLocalPopupFieldsAttivita(null);
       setHasUnsavedChanges(false);
 
-      console.log('✅ Configurazione popup salvata', newConfig);
+      console.log('✅ Configurazione popup salvata con successo', newConfig);
+      alert('Configurazione salvata con successo!');
     } catch (error) {
       console.error('❌ Errore salvataggio:', error);
       alert(`Errore nel salvataggio: ${error.message}`);

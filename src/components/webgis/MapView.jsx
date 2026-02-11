@@ -129,8 +129,22 @@ export default function MapView({ project, locali, attivita = [], user }) {
     particellaSearch: ''
   });
 
-  const popupFields = project?.config?.popup_fields || ['indirizzo', 'superficie', 'canone', 'conduttore', 'stato'];
-  const popupFieldsAttivita = project?.config?.popup_fields_attivita || [
+  // Parse config se è una stringa JSON
+  const parsedConfig = useMemo(() => {
+    if (!project?.config) return {};
+    if (typeof project.config === 'string') {
+      try {
+        return JSON.parse(project.config);
+      } catch (e) {
+        console.error('Errore parsing config in MapView:', e);
+        return {};
+      }
+    }
+    return project.config;
+  }, [project?.config]);
+
+  const popupFields = parsedConfig?.popup_fields || ['indirizzo', 'superficie', 'canone', 'conduttore', 'stato'];
+  const popupFieldsAttivita = parsedConfig?.popup_fields_attivita || [
     'ragione_sociale', 'mestiere', 'ateco2025', 'indirizzo',
     'comune', 'partita_iva', 'codice_fiscale'
   ];
@@ -253,9 +267,11 @@ export default function MapView({ project, locali, attivita = [], user }) {
       totale: visibleLocali.length,
       sfitti: visibleLocali.filter((l) => l.stato === 'sfitto').length,
       occupati: visibleLocali.filter((l) => l.stato === 'occupato').length,
-      altri: visibleLocali.filter((l) => l.stato === 'altri').length
+      altri: visibleLocali.filter((l) => l.stato === 'altri').length,
+      totaleAttivita: attivita.length,
+      attivitaFiltrate: filteredAttivita.length
     };
-  }, [visibleLocali]);
+  }, [visibleLocali, attivita.length, filteredAttivita.length]);
 
   const getFeatureStyle = (locale) => {
     const colors = {
