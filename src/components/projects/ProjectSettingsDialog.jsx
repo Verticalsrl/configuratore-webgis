@@ -60,9 +60,10 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
 
-  // Stato locale per popup fields con aggiornamento immediato
+  // Stato locale per popup fields (solo UI, non auto-save)
   const [localPopupFields, setLocalPopupFields] = useState(null);
   const [localPopupFieldsAttivita, setLocalPopupFieldsAttivita] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const { data: locali = [] } = useQuery({
     queryKey: ['locali', project?.id],
@@ -78,11 +79,14 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
     ? localPopupFieldsAttivita
     : (project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
 
-  // Reset stato locale quando cambia progetto
+  // Reset stato locale quando cambia progetto o si apre il dialog
   React.useEffect(() => {
-    setLocalPopupFields(null);
-    setLocalPopupFieldsAttivita(null);
-  }, [project?.id]);
+    if (open) {
+      setLocalPopupFields(null);
+      setLocalPopupFieldsAttivita(null);
+      setHasUnsavedChanges(false);
+    }
+  }, [project?.id, open]);
 
   const handleExport = () => {
     const geojson = {
@@ -160,8 +164,9 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
     }
   };
 
-  const handleTogglePopupField = async (field) => {
-    const currentFields = [...popupFields];
+  const handleTogglePopupField = (field) => {
+    const baseFields = project?.config?.popup_fields || DEFAULT_POPUP_FIELDS;
+    const currentFields = localPopupFields !== null ? [...localPopupFields] : [...baseFields];
     const idx = currentFields.indexOf(field);
     if (idx >= 0) {
       currentFields.splice(idx, 1);
@@ -169,27 +174,13 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
       currentFields.push(field);
     }
 
-    // Aggiorna stato locale immediatamente per feedback visivo
     setLocalPopupFields(currentFields);
-
-    // Poi aggiorna il database
-    try {
-      const newConfig = { ...(project.config || {}), popup_fields: currentFields };
-      await base44.entities.Progetto.update(project.id, { config: newConfig });
-      // Forza refetch immediato
-      await queryClient.refetchQueries({ queryKey: ['projects'] });
-      await queryClient.refetchQueries({ queryKey: ['project', project.id] });
-      console.log('✅ Popup fields locali salvati:', currentFields);
-    } catch (error) {
-      console.error('❌ Errore salvataggio popup fields locali:', error);
-      alert(`Errore nel salvataggio: ${error.message}`);
-      // Ripristina stato locale in caso di errore
-      setLocalPopupFields(null);
-    }
+    setHasUnsavedChanges(true);
   };
 
-  const handleTogglePopupFieldAttivita = async (field) => {
-    const currentFields = [...popupFieldsAttivita];
+  const handleTogglePopupFieldAttivita = (field) => {
+    const baseFields = project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA;
+    const currentFields = localPopupFieldsAttivita !== null ? [...localPopupFieldsAttivita] : [...baseFields];
     const idx = currentFields.indexOf(field);
     if (idx >= 0) {
       currentFields.splice(idx, 1);
@@ -197,56 +188,54 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
       currentFields.push(field);
     }
 
-    // Aggiorna stato locale immediatamente per feedback visivo
     setLocalPopupFieldsAttivita(currentFields);
-
-    // Poi aggiorna il database
-    try {
-      const newConfig = { ...(project.config || {}), popup_fields_attivita: currentFields };
-      await base44.entities.Progetto.update(project.id, { config: newConfig });
-      // Forza refetch immediato
-      await queryClient.refetchQueries({ queryKey: ['projects'] });
-      await queryClient.refetchQueries({ queryKey: ['project', project.id] });
-      console.log('✅ Popup fields attività salvati:', currentFields);
-    } catch (error) {
-      console.error('❌ Errore salvataggio popup fields attività:', error);
-      alert(`Errore nel salvataggio: ${error.message}`);
-      // Ripristina stato locale in caso di errore
-      setLocalPopupFieldsAttivita(null);
-    }
+    setHasUnsavedChanges(true);
   };
 
-  const handleSelectAllAttivita = async () => {
+  const handleSelectAllAttivita = () => {
     const allFields = Object.keys(POPUP_FIELD_LABELS_ATTIVITA);
     setLocalPopupFieldsAttivita(allFields);
+    setHasUnsavedChanges(true);
+  };
 
+  const handleDeselectAllAttivita = () => {
+    setLocalPopupFieldsAttivita([]);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSavePopupConfig = async () => {
+    setSaving(true);
     try {
-      const newConfig = { ...(project.config || {}), popup_fields_attivita: allFields };
+      const fieldsLocali = localPopupFields !== null ? localPopupFields : (project?.config?.popup_fields || DEFAULT_POPUP_FIELDS);
+      const fieldsAttivita = localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : (project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
+
+      const newConfig = {
+        ...(project.config || {}),
+        popup_fields: fieldsLocali,
+        popup_fields_attivita: fieldsAttivita
+      };
+
       await base44.entities.Progetto.update(project.id, { config: newConfig });
       await queryClient.refetchQueries({ queryKey: ['projects'] });
       await queryClient.refetchQueries({ queryKey: ['project', project.id] });
-      console.log('✅ Tutti i campi attività selezionati');
-    } catch (error) {
-      console.error('❌ Errore:', error);
-      alert(`Errore: ${error.message}`);
+
+      setHasUnsavedChanges(false);
+      setLocalPopupFields(null);
       setLocalPopupFieldsAttivita(null);
+
+      console.log('✅ Configurazione popup salvata');
+    } catch (error) {
+      console.error('❌ Errore salvataggio:', error);
+      alert(`Errore nel salvataggio: ${error.message}`);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDeselectAllAttivita = async () => {
-    setLocalPopupFieldsAttivita([]);
-
-    try {
-      const newConfig = { ...(project.config || {}), popup_fields_attivita: [] };
-      await base44.entities.Progetto.update(project.id, { config: newConfig });
-      await queryClient.refetchQueries({ queryKey: ['projects'] });
-      await queryClient.refetchQueries({ queryKey: ['project', project.id] });
-      console.log('✅ Tutti i campi attività deselezionati');
-    } catch (error) {
-      console.error('❌ Errore:', error);
-      alert(`Errore: ${error.message}`);
-      setLocalPopupFieldsAttivita(null);
-    }
+  const handleCancelPopupConfig = () => {
+    setLocalPopupFields(null);
+    setLocalPopupFieldsAttivita(null);
+    setHasUnsavedChanges(false);
   };
 
   if (!project) return null;
@@ -430,6 +419,36 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project }) {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Pulsanti Salva/Annulla */}
+              <div className="pt-4 border-t border-gray-200 flex gap-2">
+                <Button
+                  onClick={handleSavePopupConfig}
+                  disabled={!hasUnsavedChanges || saving}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Salvataggio...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-2" />
+                      Salva Configurazione
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleCancelPopupConfig}
+                  disabled={!hasUnsavedChanges || saving}
+                  variant="outline"
+                  className="border-gray-300 text-gray-700"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Annulla
+                </Button>
               </div>
             </TabsContent>
           </Tabs>
