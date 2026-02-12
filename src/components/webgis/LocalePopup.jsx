@@ -28,15 +28,13 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
   };
 
   const startEditing = () => {
-    // Include tutti i campi del locale, inclusi quelli da properties_raw
+    // Solo campi principali - NO properties_raw
     const allFields = {
       stato: locale.stato || 'sfitto',
       canone: locale.canone || 0,
       conduttore: locale.conduttore || '',
       superficie: locale.superficie || 0,
       indirizzo: locale.indirizzo || '',
-      // Aggiungi eventuali campi custom da properties_raw
-      ...(locale.properties_raw || {})
     };
     setEditData(allFields);
     setEditing(true);
@@ -66,7 +64,7 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
 
   if (editing) {
     return (
-      <div className="min-w-[280px]">
+      <div className="min-w-[280px] max-w-[340px]">
         <div className="text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200">
           {locale.indirizzo || 'Locale'}
         </div>
@@ -114,43 +112,25 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
               className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-900"
             />
           </div>
+        </div>
 
-          {/* Campi aggiuntivi dal GeoJSON */}
-          {Object.keys(editData).filter(key =>
-            !['stato', 'canone', 'conduttore', 'superficie', 'indirizzo'].includes(key)
-          ).map(key => (
-            <div key={key}>
-              <label className="text-xs text-slate-500 block mb-1">
-                {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-              </label>
-              <input
-                type="text"
-                value={editData[key] || ''}
-                onChange={(e) => setEditData({ ...editData, [key]: e.target.value })}
-                className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-900"
-                placeholder={`Inserisci ${key}`}
-              />
-            </div>
-          ))}
-
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-              Salva
-            </button>
-            <button
-              onClick={() => setEditing(false)}
-              disabled={saving}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-              Annulla
-            </button>
-          </div>
+        <div className="flex gap-2 pt-2 mt-2 border-t border-slate-200">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+            Salva
+          </button>
+          <button
+            onClick={() => setEditing(false)}
+            disabled={saving}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+            Annulla
+          </button>
         </div>
       </div>
     );

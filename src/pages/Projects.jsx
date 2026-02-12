@@ -69,7 +69,7 @@ export default function Projects() {
             </h1>
             <p className="text-gray-600">Gestisci i tuoi progetti WebGIS</p>
           </div>
-          {user && (
+          {user?.role === 'admin' && (
             <Button
               onClick={() => setShowWizard(true)}
               className="bg-blue-600 hover:bg-blue-700"
@@ -89,7 +89,7 @@ export default function Projects() {
             <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2 text-gray-900">Nessun progetto</h3>
             <p className="text-gray-600 mb-6">Crea il tuo primo progetto per iniziare</p>
-            {user && (
+            {user?.role === 'admin' && (
               <Button
                 onClick={() => setShowWizard(true)}
                 className="bg-blue-600 hover:bg-blue-700"
