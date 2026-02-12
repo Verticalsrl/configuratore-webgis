@@ -307,7 +307,8 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
         popup_fields_attivita: fieldsAttivita
       };
 
-      await base44.entities.Progetto.update(project.id, { config: newConfig });
+      // Salva come stringa JSON per garantire persistenza corretta in Base44
+      await base44.entities.Progetto.update(project.id, { config: JSON.stringify(newConfig) });
 
       await queryClient.refetchQueries({ queryKey: ['project-settings', project.id] });
       await queryClient.refetchQueries({ queryKey: ['projects'] });
