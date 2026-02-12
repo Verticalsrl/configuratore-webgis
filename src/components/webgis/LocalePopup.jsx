@@ -28,15 +28,13 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
   };
 
   const startEditing = () => {
-    // Include tutti i campi del locale, inclusi quelli da properties_raw
+    // Solo campi principali - NO properties_raw
     const allFields = {
       stato: locale.stato || 'sfitto',
       canone: locale.canone || 0,
       conduttore: locale.conduttore || '',
       superficie: locale.superficie || 0,
       indirizzo: locale.indirizzo || '',
-      // Aggiungi eventuali campi custom da properties_raw
-      ...(locale.properties_raw || {})
     };
     setEditData(allFields);
     setEditing(true);
@@ -66,12 +64,12 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
 
   if (editing) {
     return (
-      <div className="min-w-[280px] max-w-[340px] flex flex-col" style={{ maxHeight: '60vh' }}>
-        <div className="text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200 flex-shrink-0">
+      <div className="min-w-[280px] max-w-[340px]">
+        <div className="text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200">
           {locale.indirizzo || 'Locale'}
         </div>
 
-        <div className="space-y-3 overflow-y-auto flex-1 pr-1">
+        <div className="space-y-3">
           <div>
             <label className="text-xs text-slate-500 block mb-1">Stato</label>
             <select
@@ -114,27 +112,9 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
               className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-900"
             />
           </div>
-
-          {/* Campi aggiuntivi dal GeoJSON */}
-          {Object.keys(editData).filter(key =>
-            !['stato', 'canone', 'conduttore', 'superficie', 'indirizzo'].includes(key)
-          ).map(key => (
-            <div key={key}>
-              <label className="text-xs text-slate-500 block mb-1">
-                {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-              </label>
-              <input
-                type="text"
-                value={editData[key] || ''}
-                onChange={(e) => setEditData({ ...editData, [key]: e.target.value })}
-                className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-900"
-                placeholder={`Inserisci ${key}`}
-              />
-            </div>
-          ))}
         </div>
 
-        <div className="flex gap-2 pt-2 mt-2 border-t border-slate-200 flex-shrink-0">
+        <div className="flex gap-2 pt-2 mt-2 border-t border-slate-200">
           <button
             onClick={handleSave}
             disabled={saving}
