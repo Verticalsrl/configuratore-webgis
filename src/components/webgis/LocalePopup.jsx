@@ -66,12 +66,12 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
 
   if (editing) {
     return (
-      <div className="min-w-[280px]">
-        <div className="text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200">
+      <div className="min-w-[280px] max-w-[340px] flex flex-col" style={{ maxHeight: '60vh' }}>
+        <div className="text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200 flex-shrink-0">
           {locale.indirizzo || 'Locale'}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 overflow-y-auto flex-1 pr-1">
           <div>
             <label className="text-xs text-slate-500 block mb-1">Stato</label>
             <select
@@ -132,25 +132,25 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
               />
             </div>
           ))}
+        </div>
 
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-              Salva
-            </button>
-            <button
-              onClick={() => setEditing(false)}
-              disabled={saving}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-              Annulla
-            </button>
-          </div>
+        <div className="flex gap-2 pt-2 mt-2 border-t border-slate-200 flex-shrink-0">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+            Salva
+          </button>
+          <button
+            onClick={() => setEditing(false)}
+            disabled={saving}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+            Annulla
+          </button>
         </div>
       </div>
     );

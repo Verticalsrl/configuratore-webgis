@@ -23,6 +23,7 @@ import ProjectSettingsDialog from './ProjectSettingsDialog';
 export default function ProjectCard({ project, onDelete, user }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showAttivita, setShowAttivita] = useState(false);
+  const isAdmin = user?.role === 'admin';
 
   const { data: locali = [] } = useQuery({
     queryKey: ['locali', project.id],
@@ -74,7 +75,7 @@ export default function ProjectCard({ project, onDelete, user }) {
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start">
             <CardTitle className="text-lg text-gray-900">{project.nome}</CardTitle>
-            {user && (
+            {isAdmin && (
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
@@ -209,7 +210,7 @@ export default function ProjectCard({ project, onDelete, user }) {
         </CardContent>
       </Card>
 
-      {user && (
+      {isAdmin && (
         <ProjectSettingsDialog
           open={showSettings}
           onOpenChange={setShowSettings}

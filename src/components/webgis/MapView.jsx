@@ -111,6 +111,7 @@ export default function MapView({ project, locali, attivita = [], user }) {
   const [selectedLocale, setSelectedLocale] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const queryClient = useQueryClient();
+  const isAdmin = user?.role === 'admin';
 
   const handleBoundsChange = useCallback((bounds) => {
     setMapBounds(bounds);
@@ -369,14 +370,14 @@ export default function MapView({ project, locali, attivita = [], user }) {
                     position={[coords[1], coords[0]]}
                     icon={getMarkerIcon(locale)}
                   >
-                    <Popup>
+                    <Popup maxWidth={360} maxHeight={450} autoPan={true}>
                       <LocalePopup
                         locale={locale}
                         onOpenStreetView={setSelectedLocale}
                         user={user}
                         popupFields={popupFields}
-                        onUpdateLocale={user ? handleUpdateLocale : undefined}
-                        onDeleteLocale={user ? handleDeleteLocale : undefined}
+                        onUpdateLocale={isAdmin ? handleUpdateLocale : undefined}
+                        onDeleteLocale={isAdmin ? handleDeleteLocale : undefined}
                       />
                     </Popup>
                   </Marker>
@@ -390,14 +391,14 @@ export default function MapView({ project, locali, attivita = [], user }) {
                     data={locale.geometry}
                     style={() => getFeatureStyle(locale)}
                   >
-                    <Popup>
+                    <Popup maxWidth={360} maxHeight={450} autoPan={true}>
                       <LocalePopup
                         locale={locale}
                         onOpenStreetView={setSelectedLocale}
                         user={user}
                         popupFields={popupFields}
-                        onUpdateLocale={user ? handleUpdateLocale : undefined}
-                        onDeleteLocale={user ? handleDeleteLocale : undefined}
+                        onUpdateLocale={isAdmin ? handleUpdateLocale : undefined}
+                        onDeleteLocale={isAdmin ? handleDeleteLocale : undefined}
                       />
                     </Popup>
                   </GeoJSON>
@@ -417,8 +418,8 @@ export default function MapView({ project, locali, attivita = [], user }) {
                   key={`attivita-${att.id || index}`}
                   position={[coords[1], coords[0]]}
                   icon={attivitaIcon}
-                  draggable={!!user}
-                  eventHandlers={user ? {
+                  draggable={isAdmin}
+                  eventHandlers={isAdmin ? {
                     dragend: async (e) => {
                       const marker = e.target;
                       const newPos = marker.getLatLng();
@@ -435,14 +436,14 @@ export default function MapView({ project, locali, attivita = [], user }) {
                     }
                   } : undefined}
                 >
-                  <Popup>
+                  <Popup maxWidth={400} maxHeight={450} autoPan={true}>
                     <AttivitaPopup
                       attivita={att}
                       onOpenStreetView={setSelectedLocale}
                       user={user}
                       popupFields={popupFieldsAttivita}
-                      onUpdateAttivita={user ? handleUpdateAttivita : undefined}
-                      onDeleteAttivita={user ? handleDeleteAttivita : undefined}
+                      onUpdateAttivita={isAdmin ? handleUpdateAttivita : undefined}
+                      onDeleteAttivita={isAdmin ? handleDeleteAttivita : undefined}
                     />
                   </Popup>
                 </Marker>
