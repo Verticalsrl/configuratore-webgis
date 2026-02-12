@@ -112,13 +112,21 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
     return project.config;
   }, [project?.config]);
 
+  // Helper: converte il valore config (stringa CSV o array) in array
+  const parseFieldsConfig = (value, defaults) => {
+    if (!value) return defaults;
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') return value.split(',').filter(Boolean);
+    return defaults;
+  };
+
   // Usa stato locale se disponibile, altrimenti usa il valore del progetto
   const popupFields = localPopupFields !== null
     ? localPopupFields
-    : (parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS);
+    : parseFieldsConfig(parsedConfig?.popup_fields, DEFAULT_POPUP_FIELDS);
   const popupFieldsAttivita = localPopupFieldsAttivita !== null
     ? localPopupFieldsAttivita
-    : (parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
+    : parseFieldsConfig(parsedConfig?.popup_fields_attivita, DEFAULT_POPUP_FIELDS_ATTIVITA);
 
   // Reset stato locale solo quando si apre il dialog o cambia progetto
   React.useEffect(() => {
@@ -257,7 +265,7 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
   };
 
   const handleTogglePopupField = (field) => {
-    const baseFields = parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS;
+    const baseFields = parseFieldsConfig(parsedConfig?.popup_fields, DEFAULT_POPUP_FIELDS);
     const currentFields = localPopupFields !== null ? [...localPopupFields] : [...baseFields];
     const idx = currentFields.indexOf(field);
     if (idx >= 0) {
@@ -271,7 +279,7 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
   };
 
   const handleTogglePopupFieldAttivita = (field) => {
-    const baseFields = parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA;
+    const baseFields = parseFieldsConfig(parsedConfig?.popup_fields_attivita, DEFAULT_POPUP_FIELDS_ATTIVITA);
     const currentFields = localPopupFieldsAttivita !== null ? [...localPopupFieldsAttivita] : [...baseFields];
     const idx = currentFields.indexOf(field);
     if (idx >= 0) {
@@ -298,17 +306,16 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
   const handleSavePopupConfig = async () => {
     setSaving(true);
     try {
-      const fieldsLocali = localPopupFields !== null ? localPopupFields : (parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS);
-      const fieldsAttivita = localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : (parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
+      const fieldsLocali = localPopupFields !== null ? localPopupFields : parseFieldsConfig(parsedConfig?.popup_fields, DEFAULT_POPUP_FIELDS);
+      const fieldsAttivita = localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : parseFieldsConfig(parsedConfig?.popup_fields_attivita, DEFAULT_POPUP_FIELDS_ATTIVITA);
 
       const newConfig = {
         ...parsedConfig,
-        popup_fields: fieldsLocali,
-        popup_fields_attivita: fieldsAttivita
+        popup_fields: fieldsLocali.join(','),
+        popup_fields_attivita: fieldsAttivita.join(',')
       };
 
-      // Salva come stringa JSON per garantire persistenza corretta in Base44
-      await base44.entities.Progetto.update(project.id, { config: JSON.stringify(newConfig) });
+      await base44.entities.Progetto.update(project.id, { config: newConfig });
 
       await queryClient.refetchQueries({ queryKey: ['project-settings', project.id] });
       await queryClient.refetchQueries({ queryKey: ['projects'] });
