@@ -317,9 +317,13 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
 
       await base44.entities.Progetto.update(project.id, { config: newConfig });
 
-      await queryClient.refetchQueries({ queryKey: ['project-settings', project.id] });
-      await queryClient.refetchQueries({ queryKey: ['projects'] });
-      await queryClient.refetchQueries({ queryKey: ['project', project.id] });
+      // Invalida tutte le query relative al progetto per forzare il refetch
+      // Usiamo invalidateQueries con predicate per matchare sia string che number ID
+      await queryClient.invalidateQueries({ queryKey: ['project-settings'] });
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      await queryClient.invalidateQueries({
+        predicate: (query) => query.queryKey[0] === 'project'
+      });
 
       setHasUnsavedChanges(false);
     } catch (error) {
