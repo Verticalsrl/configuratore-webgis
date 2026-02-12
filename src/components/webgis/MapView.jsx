@@ -144,11 +144,19 @@ export default function MapView({ project, locali, attivita = [], user }) {
     return project.config;
   }, [project?.config]);
 
-  const popupFields = parsedConfig?.popup_fields || ['indirizzo', 'superficie', 'canone', 'conduttore', 'stato'];
-  const popupFieldsAttivita = parsedConfig?.popup_fields_attivita || [
+  // Helper: converte il valore config (stringa CSV o array) in array
+  const parseFields = (value, defaults) => {
+    if (!value) return defaults;
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') return value.split(',').filter(Boolean);
+    return defaults;
+  };
+
+  const popupFields = parseFields(parsedConfig?.popup_fields, ['indirizzo', 'superficie', 'canone', 'conduttore', 'stato']);
+  const popupFieldsAttivita = parseFields(parsedConfig?.popup_fields_attivita, [
     'ragione_sociale', 'mestiere', 'ateco2025', 'indirizzo',
     'comune', 'partita_iva', 'codice_fiscale'
-  ];
+  ]);
 
   const handleUpdateLocale = useCallback(async (localeId, data) => {
     await base44.entities.Locale.update(localeId, data);
