@@ -120,31 +120,14 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
     ? localPopupFieldsAttivita
     : (parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
 
-  // Reset stato locale quando cambia progetto o si apre il dialog
+  // Reset stato locale solo quando si apre il dialog o cambia progetto
   React.useEffect(() => {
     if (open) {
-      const debugInfo = {
-        projectId: project?.id,
-        rawConfigType: typeof project?.config,
-        rawConfig: project?.config,
-        parsedConfig,
-        popup_fields_attivita: parsedConfig?.popup_fields_attivita,
-      };
-
-      console.log('🔧 Apertura dialog impostazioni:', debugInfo);
-
-      // Alert di debug per vedere cosa viene caricato
-      if (parsedConfig?.popup_fields_attivita) {
-        console.log('✅ Campi attività trovati:', parsedConfig.popup_fields_attivita.join(', '));
-      } else {
-        console.log('⚠️ Nessun campo attività trovato, uso default');
-      }
-
       setLocalPopupFields(null);
       setLocalPopupFieldsAttivita(null);
       setHasUnsavedChanges(false);
     }
-  }, [projectProp?.id, open, parsedConfig]);
+  }, [projectProp?.id, open]);
 
   const handleExport = () => {
     const geojson = {
@@ -274,7 +257,7 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
   };
 
   const handleTogglePopupField = (field) => {
-    const baseFields = project?.config?.popup_fields || DEFAULT_POPUP_FIELDS;
+    const baseFields = parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS;
     const currentFields = localPopupFields !== null ? [...localPopupFields] : [...baseFields];
     const idx = currentFields.indexOf(field);
     if (idx >= 0) {
@@ -288,7 +271,7 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
   };
 
   const handleTogglePopupFieldAttivita = (field) => {
-    const baseFields = project?.config?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA;
+    const baseFields = parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA;
     const currentFields = localPopupFieldsAttivita !== null ? [...localPopupFieldsAttivita] : [...baseFields];
     const idx = currentFields.indexOf(field);
     if (idx >= 0) {
@@ -318,46 +301,20 @@ export default function ProjectSettingsDialog({ open, onOpenChange, project: pro
       const fieldsLocali = localPopupFields !== null ? localPopupFields : (parsedConfig?.popup_fields || DEFAULT_POPUP_FIELDS);
       const fieldsAttivita = localPopupFieldsAttivita !== null ? localPopupFieldsAttivita : (parsedConfig?.popup_fields_attivita || DEFAULT_POPUP_FIELDS_ATTIVITA);
 
-      console.log('📝 Salvataggio configurazione popup:', {
-        fieldsLocali,
-        fieldsAttivita,
-        localState: { localPopupFields, localPopupFieldsAttivita },
-        parsedConfig,
-        rawConfig: project.config,
-        configType: typeof project.config
-      });
-
       const newConfig = {
         ...parsedConfig,
         popup_fields: fieldsLocali,
         popup_fields_attivita: fieldsAttivita
       };
 
-      console.log('📦 Tipo config da salvare:', typeof newConfig, newConfig);
-
-      // Salva config come oggetto (Base44 gestirà la serializzazione)
       await base44.entities.Progetto.update(project.id, { config: newConfig });
 
-      console.log('💾 Config salvato, inizio refetch...');
-
-      // Invalida e refetch tutte le query correlate
       await queryClient.refetchQueries({ queryKey: ['project-settings', project.id] });
       await queryClient.refetchQueries({ queryKey: ['projects'] });
       await queryClient.refetchQueries({ queryKey: ['project', project.id] });
 
-      console.log('🔄 Refetch completati');
-
-      // NON resettare lo stato locale! Lascia i valori salvati visibili
-      // Lo stato locale verrà resettato quando si chiude e riapre il dialog
       setHasUnsavedChanges(false);
-
-      console.log('✅ Configurazione popup salvata con successo', newConfig);
-
-      // Alert di debug con info sui campi salvati
-      const campiAttivitaSalvati = fieldsAttivita.join(', ');
-      alert(`✅ Configurazione salvata!\n\n📋 Campi attività (${fieldsAttivita.length}):\n${campiAttivitaSalvati}`);
     } catch (error) {
-      console.error('❌ Errore salvataggio:', error);
       alert(`Errore nel salvataggio: ${error.message}`);
     } finally {
       setSaving(false);
