@@ -407,16 +407,33 @@ export default function MapView({ project, locali, attivita = [], user }) {
               return null;
             })}
 
-            {/* Render Attività Commerciali */}
+            {/* Render Attività Commerciali - draggable per riposizionamento */}
             {filteredAttivita.map((att, index) => {
               if (!att.coordinates) return null;
 
               const coords = att.coordinates;
               return (
                 <Marker
-                  key={`attivita-${index}`}
+                  key={`attivita-${att.id || index}`}
                   position={[coords[1], coords[0]]}
                   icon={attivitaIcon}
+                  draggable={!!user}
+                  eventHandlers={user ? {
+                    dragend: async (e) => {
+                      const marker = e.target;
+                      const newPos = marker.getLatLng();
+                      try {
+                        await handleUpdateAttivita(att.id, {
+                          coordinates: [newPos.lng, newPos.lat],
+                          latitudine: newPos.lat,
+                          longitudine: newPos.lng,
+                        });
+                      } catch (error) {
+                        // Ripristina posizione originale in caso di errore
+                        marker.setLatLng([coords[1], coords[0]]);
+                      }
+                    }
+                  } : undefined}
                 >
                   <Popup>
                     <AttivitaPopup

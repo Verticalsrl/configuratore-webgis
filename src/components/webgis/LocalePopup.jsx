@@ -9,12 +9,23 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [changingStatus, setChangingStatus] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editData, setEditData] = useState({});
 
   const fields = popupFields || DEFAULT_POPUP_FIELDS;
   const hasCoords = locale.coordinates || locale.geometry?.coordinates;
   const canEdit = !!user && !!onUpdateLocale;
+
+  const handleQuickStatusChange = async (newStatus) => {
+    if (!canEdit || newStatus === locale.stato) return;
+    setChangingStatus(true);
+    try {
+      await onUpdateLocale(locale.id, { stato: newStatus });
+    } finally {
+      setChangingStatus(false);
+    }
+  };
 
   const startEditing = () => {
     // Include tutti i campi del locale, inclusi quelli da properties_raw
@@ -239,6 +250,33 @@ export default function LocalePopup({ locale, onOpenStreetView, user, popupField
             )} />
             {locale.stato === 'sfitto' ? 'Sfitto' : locale.stato === 'occupato' ? 'Occupato' : 'Altri'}
           </span>
+        </div>
+      )}
+
+      {/* Cambio rapido stato */}
+      {canEdit && (
+        <div className="mt-3 pt-3 border-t border-slate-200">
+          <div className="text-xs text-slate-500 mb-2">Cambia stato:</div>
+          <div className="flex gap-1.5">
+            {[
+              { value: 'sfitto', label: 'Sfitto', bg: 'bg-red-100 hover:bg-red-200 text-red-700', active: 'bg-red-600 text-white' },
+              { value: 'occupato', label: 'Occupato', bg: 'bg-green-100 hover:bg-green-200 text-green-700', active: 'bg-green-600 text-white' },
+              { value: 'altri', label: 'Altri', bg: 'bg-yellow-100 hover:bg-yellow-200 text-yellow-700', active: 'bg-yellow-600 text-white' },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleQuickStatusChange(opt.value)}
+                disabled={changingStatus}
+                className={cn(
+                  "flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  locale.stato === opt.value ? opt.active : opt.bg,
+                  changingStatus && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                {changingStatus ? '...' : opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
