@@ -1,0 +1,78 @@
+{
+  "name": "Progetto",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome del progetto"
+    },
+    "descrizione": {
+      "type": "string",
+      "description": "Descrizione del progetto"
+    },
+    "config": {
+      "type": "object",
+      "description": "Configurazione mapping campi e popup",
+      "properties": {
+        "campo_superficie": {
+          "type": "string"
+        },
+        "campo_stato": {
+          "type": "string"
+        },
+        "campo_indirizzo": {
+          "type": "string"
+        },
+        "campo_canone": {
+          "type": "string"
+        },
+        "campo_conduttore": {
+          "type": "string"
+        },
+        "valore_sfitto": {
+          "type": "string"
+        },
+        "valore_occupato": {
+          "type": "string"
+        },
+        "valore_altri": {
+          "type": "string"
+        },
+        "popup_fields": {
+          "type": "string",
+          "description": "Campi popup locali, separati da virgola (CSV)"
+        },
+        "popup_fields_attivita": {
+          "type": "string",
+          "description": "Campi popup attivit\u00e0, separati da virgola (CSV)"
+        }
+      }
+    },
+    "center": {
+      "type": "array",
+      "description": "Centro mappa [lng, lat]",
+      "items": {
+        "type": "number"
+      }
+    },
+    "zoom": {
+      "type": "number",
+      "description": "Zoom iniziale mappa"
+    },
+    "totale_locali": {
+      "type": "number"
+    },
+    "totale_sfitti": {
+      "type": "number"
+    },
+    "totale_occupati": {
+      "type": "number"
+    },
+    "totale_altri": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "nome"
+  ]
+}

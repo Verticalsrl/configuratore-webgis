@@ -1,0 +1,58 @@
+{
+  "name": "Locale",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "ID del progetto di appartenenza"
+    },
+    "indirizzo": {
+      "type": "string",
+      "description": "Indirizzo del locale"
+    },
+    "superficie": {
+      "type": "number",
+      "description": "Superficie in mq"
+    },
+    "stato": {
+      "type": "string",
+      "enum": [
+        "sfitto",
+        "occupato",
+        "altri"
+      ],
+      "description": "Stato del locale"
+    },
+    "canone": {
+      "type": "number",
+      "description": "Canone mensile in euro"
+    },
+    "conduttore": {
+      "type": "string",
+      "description": "Nome del conduttore"
+    },
+    "note": {
+      "type": "string",
+      "description": "Note aggiuntive"
+    },
+    "coordinates": {
+      "type": "array",
+      "description": "Coordinate [lng, lat]",
+      "items": {
+        "type": "number"
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "description": "Geometria GeoJSON completa"
+    },
+    "properties_raw": {
+      "type": "object",
+      "description": "Propriet\u00e0 originali dal GeoJSON"
+    }
+  },
+  "required": [
+    "project_id",
+    "stato"
+  ]
+}

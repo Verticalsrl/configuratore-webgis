@@ -1,0 +1,60 @@
+{
+  "name": "AttivitaCommerciale",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "ID del progetto di appartenenza",
+      "relation": {
+        "entity": "Progetto",
+        "type": "many-to-one"
+      }
+    },
+    "ragione_sociale": {
+      "type": "string",
+      "description": "Ragione sociale dell'attivit\u00e0"
+    },
+    "mestiere": {
+      "type": "string",
+      "description": "Tipo di mestiere/attivit\u00e0"
+    },
+    "ateco2025": {
+      "type": "string",
+      "description": "Codice ATECO 2025"
+    },
+    "strada": {
+      "type": "string",
+      "description": "Nome della via"
+    },
+    "civico": {
+      "type": "string",
+      "description": "Numero civico"
+    },
+    "comune": {
+      "type": "string",
+      "description": "Nome del comune"
+    },
+    "partita_iva": {
+      "type": "string",
+      "description": "Partita IVA"
+    },
+    "coordinates": {
+      "type": "array",
+      "description": "Coordinate geografiche [lng, lat]",
+      "items": {
+        "type": "number"
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "description": "Geometria GeoJSON completa"
+    },
+    "properties_raw": {
+      "type": "object",
+      "description": "Propriet\u00e0 originali dal GeoJSON"
+    }
+  },
+  "required": [
+    "project_id"
+  ]
+}
